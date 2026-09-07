@@ -16,7 +16,40 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 <nav id="nav"></nav><main>
 <section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
 <section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th></th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
-<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
+<section id="assets" class="page">
+<h2>Asset, Equipment & Small Item Register</h2>
+
+<div class="notice">
+<b>Complete Room Inventory:</b>
+Register every machine, equipment item, tool, furniture item and small item located in each room.
+Each item should have its own identification record where applicable.
+</div>
+
+<button onclick="assetForm()">+ Add Item</button>
+
+<div class="panel">
+<table>
+<thead>
+<tr>
+<th>Identification Code</th>
+<th>Type</th>
+<th>Item / Equipment</th>
+<th>Brand / Model</th>
+<th>Serial / Asset No.</th>
+<th>Department</th>
+<th>Room</th>
+<th>Qty</th>
+<th>Condition</th>
+<th>Purchase Date</th>
+<th>Value</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="assetsT"></tbody>
+</table>
+</div>
+</section>
 <section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
 <section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
 <section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
@@ -103,8 +136,130 @@ function roomForm(r){open(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid>
 <button onclick="saveRoom(${r?.id||0})">Save</button> <button onclick=close()>Cancel</button>`)}
 function saveRoom(id){let o={id:id||Date.now(),building:rb.value,floor:rf.value,dept:rd.value,room:rr.value,person:rp.value,status:"Active"};let i=db.rooms.findIndex(x=>x.id==id);i>=0?db.rooms[i]=o:db.rooms.push(o);close();save()}
 
-function assetForm(a){open(`<h2>${a?"Edit":"Add"} Machine, Equipment or Small Item</h2><div class=grid>
-<label>Identification Code<input id=ai value="${a?.id||""}" placeholder="Generated from room and type"></label><label>Item Type<select id=at>${["Machine","Equipment","Small Item","Tool","Furniture","Other"].map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}</select></label><label>Item / Equipment<input id=an value="${a?.name||""}"></label>
+function assetForm(a){
+open(`
+<h2>${a?"Edit":"Add"} Asset, Equipment or Small Item</h2>
+
+<div class="notice">
+Register one item or one group of identical small items. 
+For controlled assets such as machines and medical equipment, use a unique identification code.
+</div>
+
+<div class="grid">
+
+<label>
+Identification Code
+<input id="ai" value="${a?.id||""}" placeholder="Example: OPD-CON1-EQP-001">
+</label>
+
+<label>
+Item Type
+<select id="at">
+${["Machine","Medical Equipment","Equipment","Small Item","Tool","Furniture","Electrical Item","IT Equipment","Other"]
+.map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}
+</select>
+</label>
+
+<label>
+Item / Equipment Name
+<input id="an" value="${a?.name||""}" placeholder="Example: Examination Bed">
+</label>
+
+<label>
+Brand / Manufacturer
+<input id="abrand" value="${a?.brand||""}" placeholder="Example: Philips">
+</label>
+
+<label>
+Model
+<input id="amodel" value="${a?.model||""}" placeholder="Model number">
+</label>
+
+<label>
+Serial No. / Asset No.
+<input id="aserial" value="${a?.serial||""}" placeholder="Serial number if available">
+</label>
+
+<label>
+Department
+<select id="ad">
+${DEPTS.map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}
+</select>
+</label>
+
+<label>
+Room / Area
+<select id="ar">
+${db.rooms.map(r=>`
+<option value="${safe(r.room)}" ${r.room==(a?.room||"")?"selected":""}>
+${safe(r.building)} - ${safe(r.floor)} - ${safe(r.room)}
+</option>
+`).join("")}
+</select>
+</label>
+
+<label>
+Quantity
+<input id="aq" type="number" min="1" value="${a?.quantity||1}">
+</label>
+
+<label>
+Condition
+<select id="ac">
+${cpConfig().conditions.map(s=>
+`<option ${s==(a?.condition||"Good")?"selected":""}>${safe(s)}</option>`
+).join("")}
+</select>
+</label>
+
+<label>
+Purchase Date
+<input id="ap" type="date" value="${a?.purchase||""}">
+</label>
+
+<label>
+Value per Unit (Rs.)
+<input id="av" type="number" min="0" value="${a?.value||""}">
+</label>
+
+<label>
+Status
+<select id="as">
+${cpConfig().statuses.map(s=>
+`<option ${s==(a?.status||"Active")?"selected":""}>${safe(s)}</option>`
+).join("")}
+</select>
+</label>
+
+<label>
+Last Maintenance
+<input id="al" type="date" value="${a?.last||""}">
+</label>
+
+<label>
+Next Maintenance Due
+<input id="nx" type="date" value="${a?.next||""}">
+</label>
+
+<label>
+Photo
+<input id="photo" type="file" accept="image/*">
+</label>
+
+</div>
+
+<label>
+Remarks / Description
+<textarea id="aremarks" placeholder="Additional details, location notes, condition notes, etc.">${a?.remarks||""}</textarea>
+</label>
+
+<br>
+
+<button onclick="fillSuggestedAssetCode()">Generate Identification Code</button>
+<button onclick="saveAsset('${a?.id||""}')">Save Item</button>
+<button onclick="close()">Cancel</button>
+`);
+}</select></label><label>Item / Equipment<input id=an value="${a?.name||""}"></label>
 <label>Department<select id=ad>${DEPTS.map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
 <label>Room<select id=ar>${db.rooms.map(r=>`<option ${r.room==(a?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
 <label>Condition<select id=ac>${["Excellent","Good","Fair","Needs Repair","Beyond Repair"].map(s=>`<option ${s==(a?.condition||"Good")?"selected":""}>${s}</option>`).join("")}</select></label>
@@ -116,7 +271,81 @@ function assetForm(a){open(`<h2>${a?"Edit":"Add"} Machine, Equipment or Small It
 function codePart(value,length){return String(value||"").replace(/[^a-z0-9]/gi,"").toUpperCase().slice(0,length)||"GEN"}
 function suggestedAssetCode(){let room=db.rooms.find(r=>r.room===ar.value),roomPart=codePart(room?.room||ar.value,4),deptPart=codePart(ad.value,3),typePart={"Machine":"MAC","Equipment":"EQP","Small Item":"SMI","Tool":"TOL","Furniture":"FUR","Other":"OTH"}[at.value]||"OTH",prefix=`${deptPart}-${roomPart}-${typePart}`,number=String(db.assets.filter(a=>String(a.id).startsWith(prefix)).length+1).padStart(3,"0");return `${prefix}-${number}`}
 function fillSuggestedAssetCode(){ai.value=suggestedAssetCode()}
-function saveAsset(old){let photo0=db.assets.find(x=>x.id==old)?.photo||"",f=photo.files[0];let done=p=>{let id=ai.value.trim()||suggestedAssetCode();let duplicate=db.assets.find(x=>x.id===id&&x.id!==old);if(duplicate){alert("This identification code already exists.");return}let o={id,name:an.value,type:at.value,dept:ad.value,room:ar.value,condition:ac.value,purchase:ap.value,value:+av.value||0,status:as.value,last:al.value,next:nx.value,photo:p,history:db.assets.find(x=>x.id==old)?.history||[]};let i=db.assets.findIndex(x=>x.id==old);i>=0?db.assets[i]=o:db.assets.push(o);close();save()};if(f){let r=new FileReader();r.onload=()=>done(r.result);r.readAsDataURL(f)}else done(photo0)}
+function saveAsset(old){
+
+if(!requireAdmin()) return;
+
+let oldAsset=db.assets.find(x=>x.id==old);
+let photo0=oldAsset?.photo||"";
+let f=document.getElementById("photo").files[0];
+
+let done=function(p){
+
+let id=document.getElementById("ai").value.trim()||suggestedAssetCode();
+
+let duplicate=db.assets.find(x=>x.id===id && x.id!==old);
+
+if(duplicate){
+alert("This identification code already exists. Please use a unique code.");
+return;
+}
+
+let room=document.getElementById("ar").value;
+let dept=document.getElementById("ad").value;
+
+let o={
+id:id,
+name:document.getElementById("an").value.trim(),
+type:document.getElementById("at").value,
+brand:document.getElementById("abrand").value.trim(),
+model:document.getElementById("amodel").value.trim(),
+serial:document.getElementById("aserial").value.trim(),
+dept:dept,
+room:room,
+quantity:Math.max(1,parseInt(document.getElementById("aq").value)||1),
+condition:document.getElementById("ac").value,
+purchase:document.getElementById("ap").value,
+value:+document.getElementById("av").value||0,
+status:document.getElementById("as").value,
+last:document.getElementById("al").value,
+next:document.getElementById("nx").value,
+remarks:document.getElementById("aremarks").value.trim(),
+photo:p,
+history:oldAsset?.history||[]
+};
+
+if(!o.name){
+alert("Please enter the item / equipment name.");
+return;
+}
+
+if(!o.room){
+alert("Please select the room / area.");
+return;
+}
+
+let i=db.assets.findIndex(x=>x.id==old);
+
+if(i>=0){
+db.assets[i]=o;
+logActivity("Updated asset",o.id+" — "+o.name+" — "+o.room);
+}else{
+db.assets.push(o);
+logActivity("Added asset",o.id+" — "+o.name+" — "+o.room);
+}
+
+close();
+save();
+};
+
+if(f){
+let r=new FileReader();
+r.onload=()=>done(r.result);
+r.readAsDataURL(f);
+}else{
+done(photo0);
+}
+}
 
 function move(id){let a=db.assets.find(x=>x.id==id);open(`<h2>Transfer Item</h2><p><b>${a.name}</b> (${a.id})</p><label>New Room<select id=nr>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Reason<textarea id=reason></textarea></label><button onclick="doMove('${id}')">Record Transfer</button> <button onclick=close()>Cancel</button>`)}
 function doMove(id){let a=db.assets.find(x=>x.id==id),from=a.room;a.room=nr.value;a.status="Active";a.history.push({date:new Date().toISOString().slice(0,10),event:"Moved",from:from,to:a.room,reason:reason.value});close();save()}
@@ -132,7 +361,66 @@ function render(){
 let today=new Date().toISOString().slice(0,10), missing=db.assets.filter(a=>a.status=="Missing").length, repair=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length,due=db.assets.filter(a=>a.next&&a.next<=today).length;
 cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 roomsT.innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
-assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button></td></tr>`).join("");
+assetsT.innerHTML=db.assets.map(a=>`
+<tr>
+<td><b>${safe(a.id)}</b></td>
+
+<td>${safe(a.type||"Equipment")}</td>
+
+<td>
+<b>${safe(a.name)}</b>
+${a.remarks?`<br><small>${safe(a.remarks)}</small>`:""}
+</td>
+
+<td>
+${safe(a.brand||"-")}
+${a.model?`<br><small>${safe(a.model)}</small>`:""}
+</td>
+
+<td>${safe(a.serial||"-")}</td>
+
+<td>${safe(a.dept)}</td>
+
+<td>${safe(a.room)}</td>
+
+<td><b>${a.quantity||1}</b></td>
+
+<td>
+<span class="badge ${
+(a.condition||"").includes("Repair")||
+(a.condition||"").includes("Damaged")||
+(a.condition||"").includes("Not Working")
+?"bad":"ok"
+}">
+${safe(a.condition||"Good")}
+</span>
+</td>
+
+<td>${safe(a.purchase||"-")}</td>
+
+<td>
+Rs. ${((+a.value||0)*(a.quantity||1)).toLocaleString()}
+</td>
+
+<td>
+<span class="badge ${
+a.status==="Missing"||
+a.status==="Disposed"||
+a.status==="Lost"
+?"bad":"ok"
+}">
+${safe(a.status)}
+</span>
+</td>
+
+<td>
+<button onclick='assetForm(${JSON.stringify(a)})'>Edit</button>
+<button onclick="move('${a.id}')">Move</button>
+<button onclick="missing('${a.id}')">Missing</button>
+</td>
+
+</tr>
+`).join("");
 locT.innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
 mcards.innerHTML=[["Due Today/Overdue",due],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repair]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 maintT.innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
@@ -252,7 +540,148 @@ function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.p
 function logout(){let u=sessionUser();if(u)logActivity("Signed out","");sessionStorage.removeItem("park5sUser");render();}
 function userForm(user){if(!requireAdmin())return;let allowed=user?.permissions||["reports"],checks=PERMISSION_LINKS.map(([id,label])=>`<label style="display:block;margin:6px 0"><input type=checkbox name=permission value="${id}" ${allowed.includes(id)?"checked":""} style="width:auto;margin-right:7px">${label}</label>`).join("");open(`<h2>${user?"Edit":"Add"} User</h2><div class=grid><label>Username<input id=uu value="${safe(user?.username||"")}" ${user?.username==="admin"?"readonly":""}></label><label>Full name<input id=un value="${safe(user?.name||"")}"></label><label>Password<input id=up type=password placeholder="${user?"Leave blank to keep current password":"Set password"}"></label><label>Role<select id=ur><option ${user?.role==="Admin"?"selected":""}>Admin</option><option ${user?.role==="Viewer"?"selected":""}>Viewer</option></select></label><label>Status<select id=us><option ${user?.status!=="Inactive"?"selected":""}>Active</option><option ${user?.status==="Inactive"?"selected":""}>Inactive</option></select></label></div><div class="panel"><h3>Options available to this user</h3><p>Administrators always have full access. For Viewer users, select only the screens they need.</p>${checks}</div><button onclick="saveUser('${user?.id||""}')">Save User</button> <button onclick=close()>Cancel</button>`)}
 function saveUser(id){if(!requireAdmin())return;let username=uu.value.trim(),existing=db.users.find(u=>u.username===username&&u.id!==id);if(!username||existing){alert("Enter a unique username.");return}let i=db.users.findIndex(u=>u.id===id),old=i>=0?db.users[i]:null;if(old&&old.username===sessionUser()?.username&&us.value==="Inactive"){alert("You cannot deactivate your own signed-in account.");return}let permissions=[...document.querySelectorAll('input[name=permission]:checked')].map(x=>x.value),record={id:id||Date.now().toString(),username,name:un.value.trim()||username,password:up.value||old?.password||"",role:ur.value,status:us.value,lastLogin:old?.lastLogin||"",permissions};if(!record.password){alert("A password is required.");return}if(record.role!=="Admin"&&!permissions.length){alert("Select at least one option for this user.");return}if(i>=0)db.users[i]=record;else db.users.push(record);logActivity(i>=0?"Updated user":"Added user",username+" — "+record.status+", options: "+(record.role==="Admin"?"All":permissions.join(", ")));close();save();}
-function renderRoomReport(){let sel=document.getElementById("reportRoom"),out=document.getElementById("roomReport");if(!sel||!out)return;let room=sel.value,items=db.assets.filter(a=>a.room===room);out.innerHTML=`<h3>${safe(room)} — ${items.length} item(s)</h3><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item / Equipment</th><th>Department</th><th>Condition</th><th>Status</th></tr></thead><tbody>${items.map(a=>`<tr><td>${safe(a.id)}</td><td>${safe(a.type||"Equipment")}</td><td>${safe(a.name)}</td><td>${safe(a.dept)}</td><td>${safe(a.condition)}</td><td>${safe(a.status)}</td></tr>`).join("")||"<tr><td colspan=6>No registered items in this room.</td></tr>"}</tbody></table>`}
+function renderRoomReport(){
+
+let sel=document.getElementById("reportRoom");
+let out=document.getElementById("roomReport");
+
+if(!sel||!out)return;
+
+let room=sel.value;
+
+let items=db.assets.filter(a=>a.room===room);
+
+let totalQty=items.reduce((t,a)=>t+(a.quantity||1),0);
+
+let totalValue=items.reduce(
+(t,a)=>t+((+a.value||0)*(a.quantity||1)),0
+);
+
+let roomInfo=db.rooms.find(r=>r.room===room);
+
+out.innerHTML=`
+
+<h3>
+${safe(room)}
+</h3>
+
+<div class="cards">
+
+<div class="card">
+Registered Records
+<b>${items.length}</b>
+</div>
+
+<div class="card">
+Total Items / Units
+<b>${totalQty}</b>
+</div>
+
+<div class="card">
+Missing
+<b>${items.filter(a=>a.status==="Missing").length}</b>
+</div>
+
+<div class="card">
+Needs Repair
+<b>${items.filter(a=>
+(a.condition||"").includes("Repair")||
+(a.condition||"").includes("Damaged")||
+(a.condition||"").includes("Not Working")
+).length}</b>
+</div>
+
+<div class="card">
+Total Value
+<b>Rs. ${totalValue.toLocaleString()}</b>
+</div>
+
+</div>
+
+<div class="panel">
+
+<p>
+<b>Building:</b> ${safe(roomInfo?.building||"-")}
+&nbsp;&nbsp;
+<b>Floor:</b> ${safe(roomInfo?.floor||"-")}
+&nbsp;&nbsp;
+<b>Department:</b> ${safe(roomInfo?.dept||"-")}
+&nbsp;&nbsp;
+<b>Responsible:</b> ${safe(roomInfo?.person||"-")}
+</p>
+
+<table>
+
+<thead>
+<tr>
+<th>#</th>
+<th>Identification Code</th>
+<th>Type</th>
+<th>Item / Equipment</th>
+<th>Brand / Model</th>
+<th>Serial / Asset No.</th>
+<th>Qty</th>
+<th>Condition</th>
+<th>Status</th>
+<th>Value</th>
+</tr>
+</thead>
+
+<tbody>
+
+${
+items.map((a,i)=>`
+
+<tr>
+
+<td>${i+1}</td>
+
+<td>${safe(a.id)}</td>
+
+<td>${safe(a.type||"Equipment")}</td>
+
+<td><b>${safe(a.name)}</b></td>
+
+<td>
+${safe(a.brand||"-")}
+${a.model?` / ${safe(a.model)}`:""}
+</td>
+
+<td>${safe(a.serial||"-")}</td>
+
+<td><b>${a.quantity||1}</b></td>
+
+<td>${safe(a.condition||"-")}</td>
+
+<td>${safe(a.status||"-")}</td>
+
+<td>
+Rs. ${((+a.value||0)*(a.quantity||1)).toLocaleString()}
+</td>
+
+</tr>
+
+`).join("")
+
+||`
+
+<tr>
+<td colspan="10">
+No registered items in this room.
+</td>
+</tr>
+
+`
+}
+
+</tbody>
+
+</table>
+
+</div>
+
+`;
+}
 function printRoomReport(){let r=document.getElementById("roomReport");if(!r)return;let w=window.open("","_blank");w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left}th{background:#eee}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);w.document.close();w.print()}
 function downloadRoomReport(){let room=document.getElementById("reportRoom")?.value||"",rows=[["Room","Identification Code","Type","Item / Equipment","Department","Condition","Status"],...db.assets.filter(a=>a.room===room).map(a=>[room,a.id,a.type||"Equipment",a.name,a.dept,a.condition,a.status])],csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Room_Contents_"+room.replace(/[^a-z0-9]+/gi,"_")+".csv";a.click();URL.revokeObjectURL(a.href)}
 function renderSecurity(){
