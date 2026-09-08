@@ -12,7 +12,80 @@ img.thumb{width:45px;height:45px;object-fit:cover;border-radius:4px;display:bloc
 .control-list{margin-top:10px;max-height:220px;overflow:auto}
 .control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
 </style>
-</head><body>
+</head><body><!-- Place this embedded data tag inside your HTML body/head -->
+<script id="embedded-db" type="application/json">
+{
+  "rooms": [
+    {
+      "id": 1,
+      "building": "Main Building",
+      "floor": "Ground Floor",
+      "dept": "Reception",
+      "room": "Reception Area",
+      "person": "Reception In-Charge",
+      "status": "Active"
+    },
+    {
+      "id": 2,
+      "building": "Main Building",
+      "floor": "Ground Floor",
+      "dept": "OPD",
+      "room": "Consultation Room 01",
+      "person": "OPD In-Charge",
+      "status": "Active"
+    }
+  ],
+  "assets": [
+    {
+      "id": "PH-OPD-EB-001",
+      "name": "Examination Bed",
+      "dept": "OPD",
+      "room": "Consultation Room 01",
+      "condition": "Good",
+      "purchase": "2024-05-12",
+      "value": 250000,
+      "status": "Active",
+      "last": "2026-08-10",
+      "next": "2026-11-10",
+      "photo": "",
+      "history": []
+    }
+  ],
+  "audits": [],
+  "actions": [],
+  "maintenance": [],
+  "users": [],
+  "activity": []
+}
+</script>
+
+<script>
+// Load initial state from embedded JSON tag
+const embeddedElement = document.getElementById("embedded-db");
+let db = JSON.parse(embeddedElement.textContent);
+
+// Save to runtime memory and update localStorage as a live cache
+function save() {
+  localStorage.setItem("park5s", JSON.stringify(db));
+  render();
+}
+
+// Function to export/download the complete HTML file with embedded updated data
+function exportUpdatedHTML() {
+  // Update embedded JSON string in DOM tree
+  embeddedElement.textContent = JSON.stringify(db, null, 2);
+  
+  // Clone current document structure
+  const htmlContent = "<!doctype html>\n" + document.documentElement.outerHTML;
+  
+  const blob = new Blob([htmlContent], { type: "text/html" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "index.html";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+</script>
 <header><h1>PARK 5S System</h1><div>5S • Rooms • Assets • Maintenance • Location Control</div></header>
 <nav id="nav"></nav><main>
 <section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
