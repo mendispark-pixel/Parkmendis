@@ -95,7 +95,7 @@
     <div class="panel">
       <h3>Room Contents Report</h3>
       <p>Select a room to display all registered assets including item photos.</p>
-      <div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br>
+      <div class="grid"><label>Photo<input id="aphoto" type="file" accept="image/*"></label><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br>
       <button onclick="printRoomReport()">Print / Save PDF</button> 
       <button onclick="downloadRoomReport()">Download CSV</button>
       <div id="roomReport" class="panel"></div>
@@ -525,38 +525,39 @@
     close(); save();
   }
 
-  function renderRoomReport() {
-    let sel = document.getElementById("reportRoom"), out = document.getElementById("roomReport");
-    if (!sel || !out) return;
-    let room = sel.value, items = window.db.assets.filter(a => a.room === room);
-    out.innerHTML = `<h3>${safe(room)} — ${items.length} item(s)</h3>
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:center;">Photo</th>
-            <th>Identification Code</th>
-            <th>Type</th>
-            <th>Item / Equipment</th>
-            <th>Department</th>
-            <th>Condition</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map(a => `<tr>
-            <td style="text-align:center;">
-              ${a.photo ? `<img src="${a.photo}" alt="Asset Photo" class="asset-img">` : `<span style="color:#aaa;">No photo</span>`}
-            </td>
-            <td><b>${safe(a.id)}</b></td>
-            <td>${safe(a.type || "Equipment")}</td>
-            <td>${safe(a.name)}</td>
-            <td>${safe(a.dept)}</td>
-            <td>${safe(a.condition)}</td>
-            <td>${safe(a.status)}</td>
-          </tr>`).join("") || "<tr><td colspan=7>No registered items in this room.</td></tr>"}
-        </tbody>
-      </table>`;
-  }
+ function renderRoomReport() {
+  let sel = document.getElementById("reportRoom"), out = document.getElementById("roomReport");
+  if (!sel || !out) return;
+  let room = sel.value, items = window.db.assets.filter(a => a.room === room);
+  
+  out.innerHTML = `<h3>${safe(room)} — ${items.length} item(s)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:center;">Photo</th>
+          <th>Identification Code</th>
+          <th>Type</th>
+          <th>Item / Equipment</th>
+          <th>Department</th>
+          <th>Condition</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map(a => `<tr>
+          <td style="text-align:center;">
+            ${a.photo ? `<img src="${a.photo}" alt="Asset Photo" class="asset-img">` : `<span style="color:#aaa;">No photo</span>`}
+          </td>
+          <td><b>${safe(a.id)}</b></td>
+          <td>${safe(a.type || "Equipment")}</td>
+          <td>${safe(a.name)}</td>
+          <td>${safe(a.dept)}</td>
+          <td>${safe(a.condition)}</td>
+          <td>${safe(a.status)}</td>
+        </tr>`).join("") || "<tr><td colspan=7>No registered items in this room.</td></tr>"}
+      </tbody>
+    </table>`;
+}
 
   function printRoomReport() {
     let r = document.getElementById("roomReport");
