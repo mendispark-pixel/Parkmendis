@@ -2,7 +2,8 @@
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARK 5S Management System</title>
 <style>
-body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7}.bad{background:#fee2e2}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb}
+body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px;vertical-align:middle}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7}.bad{background:#fee2e2}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb}
+img.thumb{width:45px;height:45px;object-fit:cover;border-radius:4px;display:block}
 </style>
 <style>
 #control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px #0001}
@@ -16,7 +17,7 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 <nav id="nav"></nav><main>
 <section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
 <section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th></th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
-<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
+<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Photo</th><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
 <section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
 <section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
 <section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
@@ -81,13 +82,15 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 </section>
 </main><div id="modal" class="modal"><div id="box" class="box"></div></div>
 <script>
+function safe(v){return String(v==null?"":v).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
+
 const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
 let db=JSON.parse(localStorage.getItem("park5s")||"null")||{rooms:[
 {id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
 {id:2,building:"Main Building",floor:"Ground Floor",dept:"OPD",room:"Consultation Room 01",person:"OPD In-Charge",status:"Active"}],
 assets:[
-{id:"PH-OPD-EB-001",name:"Examination Bed",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
-{id:"PH-OPD-BP-004",name:"BP Monitor",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",history:[]}],
+{id:"PH-OPD-EB-001",name:"Examination Bed",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",photo:"",history:[]},
+{id:"PH-OPD-BP-004",name:"BP Monitor",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",photo:"",history:[]}],
 audits:[],actions:[],maintenance:[]};
 
 function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
@@ -164,7 +167,10 @@ function render(){
 let today=new Date().toISOString().slice(0,10), missing=db.assets.filter(a=>a.status=="Missing").length, repair=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length,due=db.assets.filter(a=>a.next&&a.next<=today).length;
 cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 roomsT.innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
-assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button></td></tr>`).join("");
+assetsT.innerHTML=db.assets.map(a=>{
+  let img = a.photo ? `<img src="${a.photo}" class="thumb">` : `<span style="color:#999;font-size:11px;">No Photo</span>`;
+  return `<tr><td>${img}</td><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button></td></tr>`
+}).join("");
 locT.innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
 mcards.innerHTML=[["Due Today/Overdue",due],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repair]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 maintT.innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
@@ -174,7 +180,6 @@ dept.innerHTML=DEPTS.map(d=>{let r=db.rooms.filter(x=>x.dept==d),a=db.assets.fil
 summary.textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing,needsRepair:repair,maintenanceDue:due},null,2);
 }
 function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="PARK_5S_Data.json";a.click();URL.revokeObjectURL(u)}
-render();
 
 const CP_DEFAULTS={
 name:"PARK 5S Management System",
@@ -277,13 +282,13 @@ function sessionUser(){return db.users.find(u=>u.username===sessionStorage.getIt
 function isAdmin(){let u=sessionUser();return !!u&&u.role==="Admin"}
 function canAccess(id){let u=sessionUser();return !!u&&(u.role==="Admin"||u.permissions.includes(id))}
 function requireAdmin(){if(isAdmin())return true;alert("Administrator login is required for updates and development.");showLogin();return false}
-function safe(v){return String(v==null?"":v).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
 function logActivity(action,details){let u=sessionUser();if(!u)return;db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});localStorage.setItem("park5s",JSON.stringify(db));}
 function showLogin(){open(`<h2>Sign in</h2><p>Sign in to use the system. Administrator rights are required for all updates.</p><label>Username<input id=loginUser autocomplete=username></label><label>Password<input id=loginPass type=password autocomplete=current-password></label><br><button onclick=login()>Sign in</button>`)}
 function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.password===loginPass.value&&x.status==="Active");if(!u){alert("Invalid credentials or inactive account.");return}sessionStorage.setItem("park5sUser",u.username);u.lastLogin=new Date().toLocaleString();logActivity("Signed in","Successful login");close();if(u.role!=="Admin"){go("reports");return}render();}
 function logout(){let u=sessionUser();if(u)logActivity("Signed out","");sessionStorage.removeItem("park5sUser");render();}
 function userForm(user){if(!requireAdmin())return;let allowed=user?.permissions||["reports"],checks=PERMISSION_LINKS.map(([id,label])=>`<label style="display:block;margin:6px 0"><input type=checkbox name=permission value="${id}" ${allowed.includes(id)?"checked":""} style="width:auto;margin-right:7px">${label}</label>`).join("");open(`<h2>${user?"Edit":"Add"} User</h2><div class=grid><label>Username<input id=uu value="${safe(user?.username||"")}" ${user?.username==="admin"?"readonly":""}></label><label>Full name<input id=un value="${safe(user?.name||"")}"></label><label>Password<input id=up type=password placeholder="${user?"Leave blank to keep current password":"Set password"}"></label><label>Role<select id=ur><option ${user?.role==="Admin"?"selected":""}>Admin</option><option ${user?.role==="Viewer"?"selected":""}>Viewer</option></select></label><label>Status<select id=us><option ${user?.status!=="Inactive"?"selected":""}>Active</option><option ${user?.status==="Inactive"?"selected":""}>Inactive</option></select></label></div><div class="panel"><h3>Options available to this user</h3><p>Administrators always have full access. For Viewer users, select only the screens they need.</p>${checks}</div><button onclick="saveUser('${user?.id||""}')">Save User</button> <button onclick=close()>Cancel</button>`)}
 function saveUser(id){if(!requireAdmin())return;let username=uu.value.trim(),existing=db.users.find(u=>u.username===username&&u.id!==id);if(!username||existing){alert("Enter a unique username.");return}let i=db.users.findIndex(u=>u.id===id),old=i>=0?db.users[i]:null;if(old&&old.username===sessionUser()?.username&&us.value==="Inactive"){alert("You cannot deactivate your own signed-in account.");return}let permissions=[...document.querySelectorAll('input[name=permission]:checked')].map(x=>x.value),record={id:id||Date.now().toString(),username,name:un.value.trim()||username,password:up.value||old?.password||"",role:ur.value,status:us.value,lastLogin:old?.lastLogin||"",permissions};if(!record.password){alert("A password is required.");return}if(record.role!=="Admin"&&!permissions.length){alert("Select at least one option for this user.");return}if(i>=0)db.users[i]=record;else db.users.push(record);logActivity(i>=0?"Updated user":"Added user",username+" — "+record.status+", options: "+(record.role==="Admin"?"All":permissions.join(", ")));close();save();}
+
 function renderRoomReport(){
   let sel=document.getElementById("reportRoom"),out=document.getElementById("roomReport");
   if(!sel||!out)return;
@@ -304,7 +309,7 @@ function renderRoomReport(){
     </thead>
     <tbody>${
       items.map(a=>{
-        let img = a.photo ? `<img src="${a.photo}" style="width:45px;height:45px;object-fit:cover;border-radius:4px;">` : `<span style="color:#999;font-size:11px;">No Photo</span>`;
+        let img = a.photo ? `<img src="${a.photo}" class="thumb">` : `<span style="color:#999;font-size:11px;">No Photo</span>`;
         return `<tr>
           <td>${img}</td>
           <td>${safe(a.id)}</td>
@@ -318,15 +323,18 @@ function renderRoomReport(){
     }</tbody>
   </table>`
 }
+
 function printRoomReport(){
   let r=document.getElementById("roomReport");
   if(!r)return;
   let w=window.open("","_blank");
-  w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left;vertical-align:middle}th{background:#eee}img{width:50px;height:50px;object-fit:cover;border-radius:4px}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);
+  w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left;vertical-align:middle}th{background:#eee}img{width:45px;height:45px;object-fit:cover;border-radius:4px}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);
   w.document.close();
   w.print()
 }
+
 function downloadRoomReport(){let room=document.getElementById("reportRoom")?.value||"",rows=[["Room","Identification Code","Type","Item / Equipment","Department","Condition","Status"],...db.assets.filter(a=>a.room===room).map(a=>[room,a.id,a.type||"Equipment",a.name,a.dept,a.condition,a.status])],csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Room_Contents_"+room.replace(/[^a-z0-9]+/gi,"_")+".csv";a.click();URL.revokeObjectURL(a.href)}
+
 function renderSecurity(){
  let u=sessionUser(),loginButton=u?`<button onclick="logout()">Sign out (${safe(u.username)})</button>`:`<button onclick="showLogin()">Admin / User Login</button>`,adminLinks=[...PERMISSION_LINKS,["users","Users"],["activity","Activity Log"],["control","Control Panel"]],viewerLinks=u?PERMISSION_LINKS.filter(([id])=>u.permissions.includes(id)):[];
  nav.innerHTML=(isAdmin()?adminLinks:(u?viewerLinks:[["dashboard","Dashboard"],["reports","Reports"]])).map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("")+loginButton;
@@ -335,6 +343,7 @@ function renderSecurity(){
  let a=document.getElementById("activityT");if(a)a.innerHTML=db.activity.map(x=>`<tr><td>${safe(x.time)}</td><td>${safe(x.user)}</td><td>${safe(x.action)}</td><td>${safe(x.details)}</td></tr>`).join("")||"<tr><td colspan=4>No activity recorded yet.</td></tr>";
  let rs=document.getElementById("reportRoom");if(rs){let previous=rs.value;rs.innerHTML=[...new Set(db.rooms.map(r=>r.room))].map(r=>`<option ${r===previous?"selected":""}>${safe(r)}</option>`).join("");renderRoomReport()}
 }
+
 const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","doMove","missing","maintForm","saveMaint","auditForm","saveAudit","cpSaveSettings","cpAdd","cpRemove","cpBackup","cpRestoreBackup","cpResetConfig"];
 protectedMutations.forEach(name=>{let original=window[name];window[name]=function(...args){if(!requireAdmin())return;let result=original.apply(this,args);if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);return result}});
 const originalRender=render;render=function(){originalRender();renderSecurity()};
