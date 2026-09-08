@@ -1,0 +1,169 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARK 5S Management System</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7}.bad{background:#fee2e2}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb}.warning-banner{padding:12px;background:#fef3c7;border-left:4px solid #f59e0b;margin-bottom:15px;font-weight:bold}
+#control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px #0001}#control .card h3{margin-top:0;color:#123b5d}#control input{padding:8px;margin:4px 4px 4px 0}.control-list{margin-top:10px;max-height:220px;overflow:auto}.control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
+</style>
+
+<!-- Data Security Engine -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // STEP 1: Enter your Firebase configuration keys here for cross-device cloud persistence
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const DEFAULT_DATABASE = {
+    rooms: [
+      {id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
+      {id:2,building:"Main Building",floor:"Ground Floor",dept:"OPD",room:"Consultation Room 01",person:"OPD In-Charge",status:"Active"}
+    ],
+    assets: [
+      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
+      {id:"PH-OPD-BP-004",name:"BP Monitor",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",history:[]}
+    ],
+    audits: [],
+    actions: [],
+    maintenance: [],
+    users: [
+      {id:"admin",username:"admin",name:"System Administrator",password:"admin123",role:"Admin",status:"Active",lastLogin:"",permissions:[]},
+      {id:"viewer",username:"viewer",name:"Read-only Viewer",password:"viewer123",role:"Viewer",status:"Active",lastLogin:"",permissions:["reports"]}
+    ],
+    activity: []
+  };
+
+  // Load from local cache immediately so nothing is empty
+  const localData = localStorage.getItem("park5s_secure_db");
+  window.db = localData ? JSON.parse(localData) : DEFAULT_DATABASE;
+
+  let isCloudActive = false;
+
+  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+      const app = initializeApp(firebaseConfig);
+      const firestore = getFirestore(app);
+      const docRef = doc(firestore, "park5s_system", "main_db");
+
+      onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          window.db = docSnap.data();
+          localStorage.setItem("park5s_secure_db", JSON.stringify(window.db));
+        } else {
+          setDoc(docRef, window.db);
+        }
+        if (typeof render === "function") render();
+      });
+
+      window.save = async function() {
+        localStorage.setItem("park5s_secure_db", JSON.stringify(window.db));
+        try {
+          await setDoc(docRef, window.db);
+        } catch (e) {
+          console.error("Cloud Backup Failed:", e);
+        }
+        if (typeof render === "function") render();
+      };
+      isCloudActive = true;
+    } catch (e) {
+      console.warn("Cloud connection error, using local secure storage.");
+    }
+  }
+
+  if (!isCloudActive) {
+    window.save = function() {
+      localStorage.setItem("park5s_secure_db", JSON.stringify(window.db));
+      if (typeof render === "function") render();
+    };
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!isCloudActive) {
+      const banner = document.getElementById("statusBanner");
+      if (banner) {
+        banner.style.display = "block";
+        banner.innerHTML = "⚠️ Running in Local Mode. Data is saved locally on this browser. To sync across multiple devices permanently, add your Firebase keys into the code.";
+      }
+    }
+  });
+</script>
+</head><body>
+<header><h1>PARK 5S System</h1><div>5S • Rooms • Assets • Maintenance • Location Control</div></header>
+<nav id="nav"></nav>
+<main>
+<div id="statusBanner" class="warning-banner" style="display:none"></div>
+<section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
+<section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th></th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
+<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
+<section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
+<section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
+<section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
+<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
+<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div>
+<div id="adminReportTools">
+  <div class="panel">
+    <h3>Data Backup & Restore</h3>
+    <p>Export your database to a JSON file as an immediate offline safety measure.</p>
+    <button onclick="exportData()">Export Backup (JSON)</button>
+    <button onclick="document.getElementById('importFile').click()">Restore Backup (JSON)</button>
+    <input id="importFile" type="file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+  <button onclick="print()">Print / Save PDF</button>
+  <div class="panel"><pre id="summary"></pre></div>
+</div></section>
+
+<section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change user roles, or manage status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
+<section id="activity" class="page"><h2>Activity Log</h2><div class="notice">Shows the signed-in user responsible for protected actions.</div><div class="panel"><table><thead><tr><th>Date & time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody id="activityT"></tbody></table></div></section>
+
+<section id="control" class="page">
+<h2>⚙ Control Panel</h2>
+<div class="notice"><b>Administrator Development Area</b></div>
+<div class="grid">
+<div class="card">
+<h3>Backup & Restore</h3>
+<button onclick="exportData()">Download Backup File</button>
+<button onclick="document.getElementById('cpRestore').click()">Restore Backup File</button>
+<input id="cpRestore" type="file" accept=".json" style="display:none" onchange="importData(event)">
+</div>
+</div>
+</section>
+</main><div id="modal" class="modal"><div id="box" class="box"></div></div>
+
+<script>
+const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
+
+function close(){modal.style.display="none"}
+function open(x){box.innerHTML=x;modal.style.display="flex"}
+function go(id){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  render();
+}
+nav.innerHTML=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["reports","Reports"],["control","Control Panel"]].map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+
+function roomForm(r){open(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid><label>Building<input id=rb value="${r?.building||""}"></label><label>Floor<input id=rf value="${r?.floor||""}"></label><label>Department<select id=rd>${DEPTS.map(d=>`<option ${d==(r?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label><label>Room / Area<input id=rr value="${r?.room||""}"></label><label>Responsible Person<input id=rp value="${r?.person||""}"></label></div><button onclick="saveRoom(${r?.id||0})">Save</button> <button onclick=close()>Cancel</button>`)}
+function saveRoom(id){let o={id:id||Date.now(),building:rb.value,floor:rf.value,dept:rd.value,room:rr.value,person:rp.value,status:"Active"};let i=db.rooms.findIndex(x=>x.id==id);i>=0?db.rooms[i]=o:db.rooms.push(o);close();save()}
+
+function assetForm(a){open(`<h2>${a?"Edit":"Add"} Item</h2><div class=grid><label>Identification Code<input id=ai value="${a?.id||""}"></label><label>Item Type<select id=at>${["Machine","Equipment","Small Item","Tool","Furniture","Other"].map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}</select></label><label>Item / Equipment<input id=an value="${a?.name||""}"></label><label>Department<select id=ad>${DEPTS.map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label><label>Room<select id=ar>${(db.rooms||[]).map(r=>`<option ${r.room==(a?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label><label>Condition<select id=ac>${["Excellent","Good","Fair","Needs Repair","Beyond Repair"].map(s=>`<option ${s==(a?.condition||"Good")?"selected":""}>${s}</option>`).join("")}</select></label><label>Purchase Date<input id=ap type=date value="${a?.purchase||""}"></label><label>Value (Rs.)<input id=av type=number value="${a?.value||""}"></label><label>Status<select id=as>${["Active","In Use","In Storage","Under Maintenance","Missing","Transferred","Replaced","Disposed"].map(s=>`<option ${s==(a?.status||"Active")?"selected":""}>${s}</option>`).join("")}</select></label></div><br><button onclick="saveAsset('${a?.id||""}')">Save</button> <button onclick=close()>Cancel</button>`)}
+function saveAsset(old){let id=ai.value.trim()||Date.now().toString();let o={id,name:an.value,type:at.value,dept:ad.value,room:ar.value,condition:ac.value,purchase:ap.value,value:+av.value||0,status:as.value,last:"",next:"",history:[]};let i=db.assets.findIndex(x=>x.id==old);i>=0?db.assets[i]=o:db.assets.push(o);close();save()}
+
+function render(){
+  if(!db || !db.rooms) return;
+  let today=new Date().toISOString().slice(0,10), missing=(db.assets||[]).filter(a=>a.status=="Missing").length, repair=(db.assets||[]).filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length, due=(db.assets||[]).filter(a=>a.next&&a.next<=today).length;
+  cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+  roomsT.innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+  assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button></td></tr>`).join("");
+}
+
+function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="PARK_5S_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(u)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(){try{let parsed=JSON.parse(r.result);db=parsed.database||parsed;save();alert("Database successfully restored!");}catch(err){alert("Import failed: "+err.message);}};r.readAsText(f);}
+
+render();
+</script></body></html>
