@@ -81,7 +81,7 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 </div>
 </section>
 </main><div id="modal" class="modal"><div id="box" class="box"></div></div>
-<!-- Place this embedded data tag inside your HTML body/head -->
+<!-- Embedded Database Storage -->
 <script id="embedded-db" type="application/json">
 {
   "rooms": [
@@ -129,36 +129,6 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 </script>
 
 <script>
-// Load initial state from embedded JSON tag
-const embeddedElement = document.getElementById("embedded-db");
-let db = JSON.parse(embeddedElement.textContent);
-
-// Save to runtime memory and update localStorage as a live cache
-function save() {
-  localStorage.setItem("park5s", JSON.stringify(db));
-  render();
-}
-
-// Function to export/download the complete HTML file with embedded updated data
-function exportUpdatedHTML() {
-  // Update embedded JSON string in DOM tree
-  embeddedElement.textContent = JSON.stringify(db, null, 2);
-  
-  // Clone current document structure
-  const htmlContent = "<!doctype html>\n" + document.documentElement.outerHTML;
-  
-  const blob = new Blob([htmlContent], { type: "text/html" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "index.html";
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-</script>
-<script>
-// BEFORE (Uses localStorage):
-let db=JSON.parse(localStorage.getItem("park5s")||"null")||{ ... };
-function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
 function safe(v){return String(v==null?"":v).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
 
 const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
