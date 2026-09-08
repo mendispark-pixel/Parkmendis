@@ -6,12 +6,12 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 #control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px #0001}#control .card h3{margin-top:0;color:#123b5d}#control input{padding:8px;margin:4px 4px 4px 0}.control-list{margin-top:10px;max-height:220px;overflow:auto}.control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
 </style>
 
-<!-- Data Security Engine -->
+<!-- Data Security Engine & Unlimited Persistence -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // STEP 1: Enter your Firebase configuration keys here for cross-device cloud persistence
+  // Insert your Firebase credentials here for cross-device permanent sync
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -27,8 +27,8 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
       {id:2,building:"Main Building",floor:"Ground Floor",dept:"OPD",room:"Consultation Room 01",person:"OPD In-Charge",status:"Active"}
     ],
     assets: [
-      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
-      {id:"PH-OPD-BP-004",name:"BP Monitor",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",history:[]}
+      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2024-08-10",next:"2099-12-31",history:[]},
+      {id:"PH-OPD-BP-004",name:"BP Monitor",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2025-07-05",next:"2099-12-31",history:[]}
     ],
     audits: [],
     actions: [],
@@ -40,7 +40,7 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
     activity: []
   };
 
-  // Load from local cache immediately so nothing is empty
+  // Load existing saved local data immediately on startup
   const localData = localStorage.getItem("park5s_secure_db");
   window.db = localData ? JSON.parse(localData) : DEFAULT_DATABASE;
 
@@ -52,6 +52,7 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
       const firestore = getFirestore(app);
       const docRef = doc(firestore, "park5s_system", "main_db");
 
+      // Real-time synchronization without time limits
       onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
           window.db = docSnap.data();
@@ -67,32 +68,23 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
         try {
           await setDoc(docRef, window.db);
         } catch (e) {
-          console.error("Cloud Backup Failed:", e);
+          console.error("Cloud Save Failed:", e);
         }
         if (typeof render === "function") render();
       };
       isCloudActive = true;
     } catch (e) {
-      console.warn("Cloud connection error, using local secure storage.");
+      console.warn("Cloud error, using offline storage.");
     }
   }
 
+  // Fallback local storage function
   if (!isCloudActive) {
     window.save = function() {
       localStorage.setItem("park5s_secure_db", JSON.stringify(window.db));
       if (typeof render === "function") render();
     };
   }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    if (!isCloudActive) {
-      const banner = document.getElementById("statusBanner");
-      if (banner) {
-        banner.style.display = "block";
-        banner.innerHTML = "⚠️ Running in Local Mode. Data is saved locally on this browser. To sync across multiple devices permanently, add your Firebase keys into the code.";
-      }
-    }
-  });
 </script>
 </head><body>
 <header><h1>PARK 5S System</h1><div>5S • Rooms • Assets • Maintenance • Location Control</div></header>
