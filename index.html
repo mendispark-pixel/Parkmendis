@@ -82,6 +82,9 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 </section>
 </main><div id="modal" class="modal"><div id="box" class="box"></div></div>
 <script>
+// BEFORE (Uses localStorage):
+let db=JSON.parse(localStorage.getItem("park5s")||"null")||{ ... };
+function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
 function safe(v){return String(v==null?"":v).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
 
 const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
