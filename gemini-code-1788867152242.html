@@ -16,7 +16,7 @@
     .card, .panel { background: #fff; padding: 18px; border: 1px solid #e2e8f0; border-radius: 10px; margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .card b { font-size: 30px; display: block; margin-top: 8px; color: #123b5d; }
     table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13.5px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13.5px; vertical-align: middle; }
     th { background: #f8fafc; font-weight: 600; color: #475569; }
     .panel { overflow: auto; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
@@ -28,7 +28,7 @@
     .ok { background: #dcfce7; color: #166534; }
     .bad { background: #fee2e2; color: #991b1b; }
     .notice { padding: 12px 16px; background: #eff6ff; border-left: 4px solid #2563eb; margin-bottom: 15px; border-radius: 0 6px 6px 0; }
-    .asset-img { max-width: 45px; max-height: 45px; border-radius: 4px; object-fit: cover; }
+    .asset-img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #ccc; display: block; margin: auto; }
   </style>
 </head>
 <body>
@@ -94,7 +94,7 @@
     <h2>Reports & Exports</h2>
     <div class="panel">
       <h3>Room Contents Report</h3>
-      <p>Select a room to display all registered assets including duplicate item entries.</p>
+      <p>Select a room to display all registered assets including item photos.</p>
       <div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br>
       <button onclick="printRoomReport()">Print / Save PDF</button> 
       <button onclick="downloadRoomReport()">Download CSV</button>
@@ -164,29 +164,43 @@
   window.db = localData ? JSON.parse(localData) : DEFAULT_DATABASE;
   window.config = JSON.parse(localStorage.getItem("park5sConfig") || "null") || DEFAULT_CONFIG;
 
+  function safe(val) { return String(val || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
   function save() {
     localStorage.setItem("park5s_secure_db", JSON.stringify(window.db));
     render();
   }
 
-  function close() { modal.style.display = "none"; }
-  function openModal(x) { box.innerHTML = x; modal.style.display = "flex"; }
+  function close() { 
+    const modal = document.getElementById("modal");
+    if (modal) modal.style.display = "none"; 
+  }
+  
+  function openModal(x) { 
+    const modal = document.getElementById("modal");
+    const box = document.getElementById("box");
+    if (box && modal) {
+      box.innerHTML = x; 
+      modal.style.display = "flex"; 
+    }
+  }
 
-  function sessionUser() { return db.users.find(u => u.username === sessionStorage.getItem("park5sUser") && u.status === "Active") || null; }
+  function sessionUser() { return window.db.users.find(u => u.username === sessionStorage.getItem("park5sUser") && u.status === "Active") || null; }
   function isAdmin() { let u = sessionUser(); return !u || u.role === "Admin"; }
   function canAccess(id) { let u = sessionUser(); return !u || u.role === "Admin" || (u.permissions && u.permissions.includes(id)); }
 
   function logActivity(action, details) {
     let u = sessionUser();
     if (!u) return;
-    db.activity.unshift({ time: new Date().toLocaleString(), user: u.username, action, details: details || "" });
+    window.db.activity.unshift({ time: new Date().toLocaleString(), user: u.username, action, details: details || "" });
     save();
   }
 
   function go(id) {
     if (!canAccess(id)) { alert("Access restricted."); return; }
     document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
     render();
   }
 
@@ -198,7 +212,9 @@
   }
 
   function login() {
-    let u = db.users.find(x => x.username === loginUser.value.trim() && x.password === loginPass.value && x.status === "Active");
+    const userEl = document.getElementById("loginUser");
+    const passEl = document.getElementById("loginPass");
+    let u = window.db.users.find(x => x.username === userEl.value.trim() && x.password === passEl.value && x.status === "Active");
     if (!u) { alert("Invalid credentials."); return; }
     sessionStorage.setItem("park5sUser", u.username);
     u.lastLogin = new Date().toLocaleString();
@@ -220,10 +236,18 @@
       ["actions", "Actions"], ["reports", "Reports"]
     ];
     if (isAdmin()) links.push(["users", "Users"], ["activity", "Activity Log"], ["control", "Control Panel"]);
-    nav.innerHTML = links.filter(x => canAccess(x[0])).map(x => `<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
-    document.getElementById("loginStatus").innerHTML = u 
-      ? `<span style="margin-right:8px;font-size:13px">${u.name} (${u.role})</span><button onclick="logout()">Sign Out</button>`
-      : `<button onclick="showLogin()">Sign In</button>`;
+    
+    const navEl = document.getElementById("nav");
+    if (navEl) {
+      navEl.innerHTML = links.filter(x => canAccess(x[0])).map(x => `<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+    }
+    
+    const loginStatus = document.getElementById("loginStatus");
+    if (loginStatus) {
+      loginStatus.innerHTML = u 
+        ? `<span style="margin-right:8px;font-size:13px">${u.name} (${u.role})</span><button onclick="logout()">Sign Out</button>`
+        : `<button onclick="showLogin()">Sign In</button>`;
+    }
   }
 
   function codePart(val, len) { return String(val || "").replace(/[^a-z0-9]/gi, "").toUpperCase().slice(0, len) || "GEN"; }
@@ -237,13 +261,13 @@
     let deptVal = deptEl ? deptEl.value : "";
     let typeVal = typeEl ? typeEl.value : "";
 
-    let roomObj = db.rooms.find(r => r.room === roomVal);
+    let roomObj = window.db.rooms.find(r => r.room === roomVal);
     let deptCode = codePart(deptVal, 3);
     let roomCode = codePart(roomObj?.room || roomVal, 3);
     let typeCode = codePart(typeVal, 3);
     let prefix = `PH-${deptCode}-${roomCode}-${typeCode}-`;
     
-    let matches = (db.assets || [])
+    let matches = (window.db.assets || [])
       .filter(a => a.id && a.id.startsWith(prefix) && (isEdit ? a.id !== oldId : true))
       .map(a => parseInt(a.id.replace(prefix, ""), 10))
       .filter(n => !isNaN(n));
@@ -280,8 +304,8 @@
       status: "Active" 
     };
     
-    let i = db.rooms.findIndex(x => x.id == id);
-    if (i >= 0) db.rooms[i] = o; else db.rooms.push(o);
+    let i = window.db.rooms.findIndex(x => x.id == id);
+    if (i >= 0) window.db.rooms[i] = o; else window.db.rooms.push(o);
     close(); save();
   }
 
@@ -294,7 +318,7 @@
       <label>Item Type<select id="at" onchange="if(!${isEdit}) document.getElementById('ai').value=generateID(false, '${a?.id || ""}')">${["Machine", "Equipment", "Small Item", "Tool", "Furniture", "Other"].map(t => `<option ${t === (a?.type || "Equipment") ? "selected" : ""}>${t}</option>`).join("")}</select></label>
       <label>Department<select id="ad" onchange="if(!${isEdit}) document.getElementById('ai').value=generateID(false, '${a?.id || ""}')">${depts.map(d => `<option ${d === (a?.dept || "") ? "selected" : ""}>${d}</option>`).join("")}</select></label>
       <label>Item Name<input id="an" value="${a?.name || ""}"></label>
-      <label>Room<select id="ar" onchange="if(!${isEdit}) document.getElementById('ai').value=generateID(false, '${a?.id || ""}')">${(db.rooms || []).map(r => `<option ${r.room === (a?.room || "") ? "selected" : ""}>${r.room}</option>`).join("")}</select></label>
+      <label>Room<select id="ar" onchange="if(!${isEdit}) document.getElementById('ai').value=generateID(false, '${a?.id || ""}')">${(window.db.rooms || []).map(r => `<option ${r.room === (a?.room || "") ? "selected" : ""}>${r.room}</option>`).join("")}</select></label>
       ${!isEdit ? `<label>Quantity<input id="aqty" type="number" min="1" value="1" title="Set count to create multiple items at once"></label>` : ""}
       <label>Condition<select id="ac">${["Excellent", "Good", "Fair", "Needs Repair", "Beyond Repair"].map(s => `<option ${s === (a?.condition || "Good") ? "selected" : ""}>${s}</option>`).join("")}</select></label>
       <label>Purchase Date<input id="ap" type="date" value="${a?.purchase || ""}"></label>
@@ -331,9 +355,9 @@
       let isEditing = Boolean(oldId && oldId.length > 0);
 
       if (isEditing) {
-        let duplicate = db.assets.find(x => x.id === inputId && x.id !== oldId);
+        let duplicate = window.db.assets.find(x => x.id === inputId && x.id !== oldId);
         let finalId = (!inputId || duplicate) ? generateID(true, oldId) : inputId;
-        let existing = db.assets.find(x => x.id === oldId);
+        let existing = window.db.assets.find(x => x.id === oldId);
 
         let updatedAsset = {
           id: finalId,
@@ -351,13 +375,13 @@
           history: existing?.history || []
         };
 
-        let index = db.assets.findIndex(x => x.id === oldId);
-        if (index >= 0) db.assets[index] = updatedAsset;
-        else db.assets.push(updatedAsset);
+        let index = window.db.assets.findIndex(x => x.id === oldId);
+        if (index >= 0) window.db.assets[index] = updatedAsset;
+        else window.db.assets.push(updatedAsset);
 
       } else {
         for (let k = 0; k < qtyVal; k++) {
-          let currentId = (k === 0 && inputId && !db.assets.some(x => x.id === inputId)) 
+          let currentId = (k === 0 && inputId && !window.db.assets.some(x => x.id === inputId)) 
             ? inputId 
             : generateID(false, "", k);
 
@@ -377,7 +401,7 @@
             history: []
           };
 
-          db.assets.push(newAsset);
+          window.db.assets.push(newAsset);
         }
       }
 
@@ -396,15 +420,15 @@
   }
 
   function move(id) {
-    let a = db.assets.find(x => x.id == id);
+    let a = window.db.assets.find(x => x.id == id);
     openModal(`<h2>Transfer Asset</h2><p><b>${a.name}</b> (${a.id})</p>
-      <label>New Room<select id="nr">${db.rooms.map(r => `<option>${r.room}</option>`).join("")}</select></label>
+      <label>New Room<select id="nr">${window.db.rooms.map(r => `<option>${r.room}</option>`).join("")}</select></label>
       <label>Reason<textarea id="mreason"></textarea></label><br>
       <button onclick="doMove('${id}')">Record Transfer</button> <button onclick="close()">Cancel</button>`);
   }
 
   function doMove(id) {
-    let a = db.assets.find(x => x.id == id), from = a.room;
+    let a = window.db.assets.find(x => x.id == id), from = a.room;
     let nrEl = document.getElementById("nr");
     let mrEl = document.getElementById("mreason");
     a.room = nrEl ? nrEl.value : a.room; 
@@ -414,15 +438,15 @@
   }
 
   function markMissing(id) {
-    let a = db.assets.find(x => x.id == id);
+    let a = window.db.assets.find(x => x.id == id);
     a.status = "Missing";
-    db.actions.push({ date: new Date().toISOString().slice(0, 10), type: "Missing Item", item: a.name, location: a.room, finding: "Unregistered location check.", status: "Open" });
+    window.db.actions.push({ date: new Date().toISOString().slice(0, 10), type: "Missing Item", item: a.name, location: a.room, finding: "Unregistered location check.", status: "Open" });
     save();
   }
 
   function maintForm() {
     openModal(`<h2>Record Maintenance</h2><div class="grid">
-      <label>Asset<select id="mi">${db.assets.map(a => `<option value="${a.id}">${a.name} (${a.id})</option>`).join("")}</select></label>
+      <label>Asset<select id="mi">${window.db.assets.map(a => `<option value="${a.id}">${a.name} (${a.id})</option>`).join("")}</select></label>
       <label>Last Service Date<input id="md" type="date" value="${new Date().toISOString().slice(0, 10)}"></label>
       <label>Next Due Date<input id="mn" type="date"></label>
       <label>Provider<input id="mp"></label>
@@ -437,12 +461,12 @@
     let mpEl = document.getElementById("mp");
     let mvEl = document.getElementById("mv");
 
-    let a = db.assets.find(x => x.id == miEl?.value);
+    let a = window.db.assets.find(x => x.id == miEl?.value);
     if (a) {
       a.last = mdEl?.value || ""; 
       a.next = mnEl?.value || ""; 
       a.status = "Active";
-      db.maintenance.push({ asset: a.name, id: a.id, last: mdEl?.value || "", next: mnEl?.value || "", provider: mpEl?.value || "", cost: +(mvEl?.value || 0) });
+      window.db.maintenance.push({ asset: a.name, id: a.id, last: mdEl?.value || "", next: mnEl?.value || "", provider: mpEl?.value || "", cost: +(mvEl?.value || 0) });
     }
     close(); save();
   }
@@ -451,7 +475,7 @@
     const depts = window.config?.departments || ["Reception", "OPD", "Pharmacy", "Ward"];
     openModal(`<h2>Conduct 5S Audit</h2><div class="grid">
       <label>Department<select id="xdept">${depts.map(d => `<option>${d}</option>`).join("")}</select></label>
-      <label>Room<select id="xroom">${db.rooms.map(r => `<option>${r.room}</option>`).join("")}</select></label>
+      <label>Room<select id="xroom">${window.db.rooms.map(r => `<option>${r.room}</option>`).join("")}</select></label>
       <label>Auditor<input id="xaud"></label>
       <label>Date<input id="xdate" type="date" value="${new Date().toISOString().slice(0, 10)}"></label>
       ${["Sort", "Set in Order", "Shine", "Standardize", "Sustain"].map(s => `<label>${s}<select id="x${s.replaceAll(" ", "")}">${[0, 1, 2, 3, 4].map(v => `<option>${v}</option>`).join("")}</select></label>`).join("")}
@@ -465,7 +489,7 @@
     let xaud = document.getElementById("xaud");
 
     let vals = ["Sort", "SetinOrder", "Shine", "Standardize", "Sustain"].map(s => +(document.getElementById("x" + s)?.value || 0));
-    db.audits.push({ date: xdate?.value || "", dept: xdept?.value || "", room: xroom?.value || "", auditor: xaud?.value || "", vals });
+    window.db.audits.push({ date: xdate?.value || "", dept: xdept?.value || "", room: xroom?.value || "", auditor: xaud?.value || "", vals });
     close(); save();
   }
 
@@ -486,49 +510,80 @@
     let urEl = document.getElementById("ur");
     let usEl = document.getElementById("us");
 
-    let i = db.users.findIndex(x => x.id === id);
+    let i = window.db.users.findIndex(x => x.id === id);
     let record = {
       id: id || Date.now().toString(), 
       username: uuEl?.value.trim() || "", 
       name: unEl?.value.trim() || "",
-      password: upEl?.value || (i >= 0 ? db.users[i].password : "123456"),
+      password: upEl?.value || (i >= 0 ? window.db.users[i].password : "123456"),
       role: urEl?.value || "Viewer", 
       status: usEl?.value || "Active", 
-      lastLogin: i >= 0 ? db.users[i].lastLogin : "", 
+      lastLogin: i >= 0 ? window.db.users[i].lastLogin : "", 
       permissions: (urEl?.value === "Admin") ? [] : ["reports"]
     };
-    if (i >= 0) db.users[i] = record; else db.users.push(record);
+    if (i >= 0) window.db.users[i] = record; else window.db.users.push(record);
     close(); save();
   }
 
   function renderRoomReport() {
-    let reportRoom = document.getElementById("reportRoom");
-    if (!reportRoom) return;
-    let room = reportRoom.value;
-    let items = db.assets.filter(a => a.room === room);
-    document.getElementById("roomReport").innerHTML = `<h3>${room} (${items.length} registered assets)</h3>
-      <table><thead><tr><th>Photo</th><th>ID Code</th><th>Type</th><th>Name</th><th>Condition</th><th>Status</th></tr></thead>
-      <tbody>${items.map(a => `<tr>
-        <td>${a.photo ? `<img src="${a.photo}" class="asset-img">` : "No Image"}</td>
-        <td><b>${a.id}</b></td><td>${a.type}</td><td>${a.name}</td><td>${a.condition}</td><td>${a.status}</td>
-      </tr>`).join("") || "<tr><td colspan='6'>No assets registered in this room.</td></tr>"}</tbody></table>`;
+    let sel = document.getElementById("reportRoom"), out = document.getElementById("roomReport");
+    if (!sel || !out) return;
+    let room = sel.value, items = window.db.assets.filter(a => a.room === room);
+    out.innerHTML = `<h3>${safe(room)} — ${items.length} item(s)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:center;">Photo</th>
+            <th>Identification Code</th>
+            <th>Type</th>
+            <th>Item / Equipment</th>
+            <th>Department</th>
+            <th>Condition</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(a => `<tr>
+            <td style="text-align:center;">
+              ${a.photo ? `<img src="${a.photo}" alt="Asset Photo" class="asset-img">` : `<span style="color:#aaa;">No photo</span>`}
+            </td>
+            <td><b>${safe(a.id)}</b></td>
+            <td>${safe(a.type || "Equipment")}</td>
+            <td>${safe(a.name)}</td>
+            <td>${safe(a.dept)}</td>
+            <td>${safe(a.condition)}</td>
+            <td>${safe(a.status)}</td>
+          </tr>`).join("") || "<tr><td colspan=7>No registered items in this room.</td></tr>"}
+        </tbody>
+      </table>`;
   }
 
   function printRoomReport() {
-    let roomReport = document.getElementById("roomReport");
+    let r = document.getElementById("roomReport");
+    if (!r) return;
     let w = window.open("", "_blank");
-    w.document.write(`<html><head><title>Room Report</title><style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:8px;}</style></head><body>${roomReport.innerHTML}</body></html>`);
-    w.document.close(); w.print();
+    w.document.write(`<html><head><title>Room Contents Report</title><style>
+      body { font-family: Arial, sans-serif; padding: 25px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      th, td { border: 1px solid #bbb; padding: 8px; text-align: left; vertical-align: middle; }
+      th { background: #eee; }
+      img { max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px; display: block; margin: auto; }
+    </style></head><body><h1>${safe(window.config?.name || "PARK 5S System")}</h1>${r.innerHTML}</body></html>`);
+    w.document.close();
+    w.print();
   }
 
   function downloadRoomReport() {
-    let reportRoom = document.getElementById("reportRoom");
-    let room = reportRoom ? reportRoom.value : "";
-    let rows = [["Room", "ID", "Type", "Name", "Dept", "Condition", "Status"], ...db.assets.filter(a => a.room === room).map(a => [room, a.id, a.type, a.name, a.dept, a.condition, a.status])];
-    let csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = `Room_Report_${room}.csv`; a.click();
+    let room = document.getElementById("reportRoom")?.value || "",
+        rows = [["Room", "Identification Code", "Type", "Item / Equipment", "Department", "Condition", "Status", "Has Photo"],
+        ...window.db.assets.filter(a => a.room === room).map(a => [room, a.id, a.type || "Equipment", a.name, a.dept, a.condition, a.status, a.photo ? "Yes" : "No"])],
+        csv = rows.map(r => r.map(v => '"' + String(v ?? "").replaceAll('"', '""') + '"').join(",")).join("\n"),
+        blob = new Blob([csv], { type: "text/csv" }),
+        a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "Room_Contents_" + room.replace(/[^a-z0-9]+/gi, "_") + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   function cpSaveSettings() {
@@ -545,7 +600,7 @@
   }
 
   function exportData() {
-    let blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+    let blob = new Blob([JSON.stringify(window.db, null, 2)], { type: "application/json" });
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `PARK_5S_Backup_${new Date().toISOString().slice(0, 10)}.json`;
@@ -558,7 +613,7 @@
     let r = new FileReader();
     r.onload = function() {
       try {
-        db = JSON.parse(r.result);
+        window.db = JSON.parse(r.result);
         save();
         alert("Database restored.");
         location.reload();
@@ -568,56 +623,94 @@
   }
 
   function render() {
-    if (!db || !db.rooms) return;
+    if (!window.db || !window.db.rooms) return;
     renderNav();
 
-    document.getElementById("appTitle").innerText = window.config?.name || "PARK 5S System";
-    document.getElementById("appSubtitle").innerText = window.config?.subtitle || "5S • Rooms • Assets";
+    const appTitle = document.getElementById("appTitle");
+    const appSubtitle = document.getElementById("appSubtitle");
+    if (appTitle) appTitle.innerText = window.config?.name || "PARK 5S System";
+    if (appSubtitle) appSubtitle.innerText = window.config?.subtitle || "5S • Rooms • Assets";
 
     let today = new Date().toISOString().slice(0, 10);
-    let missing = db.assets.filter(a => a.status === "Missing").length;
-    let repair = db.assets.filter(a => a.condition === "Needs Repair" || a.condition === "Beyond Repair").length;
-    let due = db.assets.filter(a => a.next && a.next <= today).length;
+    let missing = window.db.assets.filter(a => a.status === "Missing").length;
+    let repair = window.db.assets.filter(a => a.condition === "Needs Repair" || a.condition === "Beyond Repair").length;
+    let due = window.db.assets.filter(a => a.next && a.next <= today).length;
 
-    cards.innerHTML = [
-      ["Buildings", [...new Set(db.rooms.map(r => r.building))].length],
-      ["Rooms", db.rooms.length],
-      ["Assets", db.assets.length],
-      ["Missing", missing],
-      ["Needs Repair", repair],
-      ["Maintenance Due", due]
-    ].map(x => `<div class="card">${x[0]}<b>${x[1]}</b></div>`).join("");
+    const cardsEl = document.getElementById("cards");
+    if (cardsEl) {
+      cardsEl.innerHTML = [
+        ["Buildings", [...new Set(window.db.rooms.map(r => r.building))].length],
+        ["Rooms", window.db.rooms.length],
+        ["Assets", window.db.assets.length],
+        ["Missing", missing],
+        ["Needs Repair", repair],
+        ["Maintenance Due", due]
+      ].map(x => `<div class="card">${x[0]}<b>${x[1]}</b></div>`).join("");
+    }
 
-    roomsT.innerHTML = db.rooms.map(r => `<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+    const roomsT = document.getElementById("roomsT");
+    if (roomsT) {
+      roomsT.innerHTML = window.db.rooms.map(r => `<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+    }
     
-    assetsT.innerHTML = db.assets.map(a => `<tr>
-      <td>${a.photo ? `<img src="${a.photo}" class="asset-img">` : "-"}</td>
-      <td><b>${a.id}</b></td><td>${a.type || "Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td>
-      <td>${window.config?.currency || "LKR"} ${(+a.value || 0).toLocaleString()}</td><td><span class="badge ${a.status === "Missing" ? "bad" : "ok"}">${a.status}</span></td>
-      <td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="markMissing('${a.id}')">Missing</button></td>
-    </tr>`).join("");
+    const assetsT = document.getElementById("assetsT");
+    if (assetsT) {
+      assetsT.innerHTML = window.db.assets.map(a => `<tr>
+        <td>${a.photo ? `<img src="${a.photo}" class="asset-img">` : `<span style="color:#aaa;text-align:center;display:block">No photo</span>`}</td>
+        <td><b>${a.id}</b></td><td>${a.type || "Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td>
+        <td>${window.config?.currency || "LKR"} ${(+a.value || 0).toLocaleString()}</td><td><span class="badge ${a.status === "Missing" ? "bad" : "ok"}">${a.status}</span></td>
+        <td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="markMissing('${a.id}')">Missing</button></td>
+      </tr>`).join("");
+    }
 
-    locT.innerHTML = db.assets.map(a => `<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status === "Missing" ? 0 : 1}</td><td><span class="badge ${a.status === "Missing" ? "bad" : "ok"}">${a.status === "Missing" ? "Missing" : "Present"}</span></td><td>${a.status === "Missing" ? "Investigate" : "Verified"}</td></tr>`).join("");
+    const locT = document.getElementById("locT");
+    if (locT) {
+      locT.innerHTML = window.db.assets.map(a => `<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status === "Missing" ? 0 : 1}</td><td><span class="badge ${a.status === "Missing" ? "bad" : "ok"}">${a.status === "Missing" ? "Missing" : "Present"}</span></td><td>${a.status === "Missing" ? "Investigate" : "Verified"}</td></tr>`).join("");
+    }
 
-    mcards.innerHTML = [["Due / Overdue", due], ["Under Maintenance", db.assets.filter(a => a.status === "Under Maintenance").length], ["Needs Repair", repair]].map(x => `<div class="card">${x[0]}<b>${x[1]}</b></div>`).join("");
-    maintT.innerHTML = (db.maintenance || []).map(m => `<tr><td>${m.asset}</td><td>${m.id}</td><td>${m.last || "-"}</td><td>${m.next || "-"}</td><td>${m.provider || "-"}</td><td>${window.config?.currency || "LKR"} ${(+m.cost || 0).toLocaleString()}</td></tr>`).join("");
+    const mcards = document.getElementById("mcards");
+    if (mcards) {
+      mcards.innerHTML = [["Due / Overdue", due], ["Under Maintenance", window.db.assets.filter(a => a.status === "Under Maintenance").length], ["Needs Repair", repair]].map(x => `<div class="card">${x[0]}<b>${x[1]}</b></div>`).join("");
+    }
 
-    auditT.innerHTML = (db.audits || []).map(a => `<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v => `<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x, y) => x + y, 0) / 20 * 100)}%</td></tr>`).join("");
-    actionsT.innerHTML = (db.actions || []).map(a => `<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
+    const maintT = document.getElementById("maintT");
+    if (maintT) {
+      maintT.innerHTML = (window.db.maintenance || []).map(m => `<tr><td>${m.asset}</td><td>${m.id}</td><td>${m.last || "-"}</td><td>${m.next || "-"}</td><td>${m.provider || "-"}</td><td>${window.config?.currency || "LKR"} ${(+m.cost || 0).toLocaleString()}</td></tr>`).join("");
+    }
+
+    const auditT = document.getElementById("auditT");
+    if (auditT) {
+      auditT.innerHTML = (window.db.audits || []).map(a => `<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v => `<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x, y) => x + y, 0) / 20 * 100)}%</td></tr>`).join("");
+    }
+
+    const actionsT = document.getElementById("actionsT");
+    if (actionsT) {
+      actionsT.innerHTML = (window.db.actions || []).map(a => `<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
+    }
 
     let depts = window.config?.departments || ["Reception", "OPD", "Pharmacy", "Ward"];
-    dept.innerHTML = depts.map(d => {
-      let r = db.rooms.filter(x => x.dept === d), a = db.assets.filter(x => x.dept === d), au = db.audits.filter(x => x.dept === d);
-      let sc = au.length ? Math.round(au.reduce((t, x) => t + x.vals.reduce((p, q) => p + q, 0) / 20 * 100, 0) / au.length) : 0;
-      return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x => x.status === "Missing").length}</td><td>${a.filter(x => x.condition.includes("Repair")).length}</td><td>${sc ? sc + "%" : "—"}</td></tr>`;
-    }).join("");
+    const deptT = document.getElementById("dept");
+    if (deptT) {
+      deptT.innerHTML = depts.map(d => {
+        let r = window.db.rooms.filter(x => x.dept === d), a = window.db.assets.filter(x => x.dept === d), au = window.db.audits.filter(x => x.dept === d);
+        let sc = au.length ? Math.round(au.reduce((t, x) => t + x.vals.reduce((p, q) => p + q, 0) / 20 * 100, 0) / au.length) : 0;
+        return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x => x.status === "Missing").length}</td><td>${a.filter(x => x.condition.includes("Repair")).length}</td><td>${sc ? sc + "%" : "—"}</td></tr>`;
+      }).join("");
+    }
 
-    usersT.innerHTML = db.users.map(u => `<tr><td>${u.username}</td><td>${u.name}</td><td>${u.role}</td><td><span class="badge ${u.status === "Active" ? "ok" : "bad"}">${u.status}</span></td><td>${u.lastLogin || "Never"}</td><td><button onclick='userForm(${JSON.stringify(u)})'>Edit</button></td></tr>`).join("");
-    activityT.innerHTML = db.activity.map(a => `<tr><td>${a.time}</td><td>${a.user}</td><td>${a.action}</td><td>${a.details}</td></tr>`).join("");
+    const usersT = document.getElementById("usersT");
+    if (usersT) {
+      usersT.innerHTML = window.db.users.map(u => `<tr><td>${u.username}</td><td>${u.name}</td><td>${u.role}</td><td><span class="badge ${u.status === "Active" ? "ok" : "bad"}">${u.status}</span></td><td>${u.lastLogin || "Never"}</td><td><button onclick='userForm(${JSON.stringify(u)})'>Edit</button></td></tr>`).join("");
+    }
+
+    const activityT = document.getElementById("activityT");
+    if (activityT) {
+      activityT.innerHTML = window.db.activity.map(a => `<tr><td>${a.time}</td><td>${a.user}</td><td>${a.action}</td><td>${a.details}</td></tr>`).join("");
+    }
 
     let reportRoom = document.getElementById("reportRoom");
     if (reportRoom) {
-      reportRoom.innerHTML = db.rooms.map(r => `<option>${r.room}</option>`).join("");
+      reportRoom.innerHTML = window.db.rooms.map(r => `<option>${r.room}</option>`).join("");
       if (reportRoom.value) renderRoomReport();
     }
 
