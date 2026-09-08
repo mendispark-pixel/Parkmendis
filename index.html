@@ -81,6 +81,80 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 </div>
 </section>
 </main><div id="modal" class="modal"><div id="box" class="box"></div></div>
+<!-- Place this embedded data tag inside your HTML body/head -->
+<script id="embedded-db" type="application/json">
+{
+  "rooms": [
+    {
+      "id": 1,
+      "building": "Main Building",
+      "floor": "Ground Floor",
+      "dept": "Reception",
+      "room": "Reception Area",
+      "person": "Reception In-Charge",
+      "status": "Active"
+    },
+    {
+      "id": 2,
+      "building": "Main Building",
+      "floor": "Ground Floor",
+      "dept": "OPD",
+      "room": "Consultation Room 01",
+      "person": "OPD In-Charge",
+      "status": "Active"
+    }
+  ],
+  "assets": [
+    {
+      "id": "PH-OPD-EB-001",
+      "name": "Examination Bed",
+      "dept": "OPD",
+      "room": "Consultation Room 01",
+      "condition": "Good",
+      "purchase": "2024-05-12",
+      "value": 250000,
+      "status": "Active",
+      "last": "2026-08-10",
+      "next": "2026-11-10",
+      "photo": "",
+      "history": []
+    }
+  ],
+  "audits": [],
+  "actions": [],
+  "maintenance": [],
+  "users": [],
+  "activity": []
+}
+</script>
+
+<script>
+// Load initial state from embedded JSON tag
+const embeddedElement = document.getElementById("embedded-db");
+let db = JSON.parse(embeddedElement.textContent);
+
+// Save to runtime memory and update localStorage as a live cache
+function save() {
+  localStorage.setItem("park5s", JSON.stringify(db));
+  render();
+}
+
+// Function to export/download the complete HTML file with embedded updated data
+function exportUpdatedHTML() {
+  // Update embedded JSON string in DOM tree
+  embeddedElement.textContent = JSON.stringify(db, null, 2);
+  
+  // Clone current document structure
+  const htmlContent = "<!doctype html>\n" + document.documentElement.outerHTML;
+  
+  const blob = new Blob([htmlContent], { type: "text/html" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "index.html";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+</script>
 <script>
 // BEFORE (Uses localStorage):
 let db=JSON.parse(localStorage.getItem("park5s")||"null")||{ ... };
