@@ -100,27 +100,6 @@ Use this section for small system/configuration changes. Viewer accounts cannot 
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyC-Fb4VCU0R7aNtO--4CyYCXnsYG-hdu-w",
-  authDomain: "park-5s-system.firebaseapp.com",
-  projectId: "park-5s-system",
-  storageBucket: "park-5s-system.firebasestorage.app",
-  messagingSenderId: "949666018852",
-  appId: "1:949666018852:web:a96333bd7f22e1e6cc4ab1",
-  measurementId: "G-P4Q8FCJZD5"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
   // Global database object initialization
   window.db = { rooms: [], assets: [], audits: [], actions: [], maintenance: [], users: [], activity: [] };
 
