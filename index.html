@@ -384,6 +384,21 @@ securitySetup();render();
   };
 
   const app = initializeApp(firebaseConfig);
-  window.dbCloud = getFirestore(app);
-  window.storageCloud = getStorage(app);
+const storage = getStorage(app);
+
+  // Expose upload function globally so standard script functions can call it
+  window.uploadAssetPhoto = async function(file, assetId) {
+    if (!file) return "";
+    
+    // Create a unique file path in Firebase Storage
+    const fileName = `assets/${assetId}_${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, fileName);
+
+    // Upload raw File object directly
+    await uploadBytes(storageRef, file);
+
+    // Retrieve and return public download URL
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  };
 </script></body></html>
