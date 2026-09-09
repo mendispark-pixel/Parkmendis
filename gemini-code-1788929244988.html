@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PARK 5S System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f6f8; }
+    header { background: #0b3c5d; color: #fff; padding: 20px; }
+    header h1 { margin: 0; font-size: 24px; }
+    header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+    nav { background: #3282b8; padding: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    nav button { background: #1b262c; color: white; border: none; padding: 8px 14px; cursor: pointer; border-radius: 4px; }
+    nav button:hover { background: #0f4c75; }
+    .container { padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .card { background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card b { display: block; font-size: 22px; color: #0b3c5d; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #eee; }
+    .page { display: none; }
+    .page.active { display: block; }
+    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .badge { padding: 3px 8px; border-radius: 12px; font-size: 12px; color: white; }
+    .badge.ok { background: #28a745; }
+    .badge.bad { background: #dc3545; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 id="sysTitle">PARK 5S System</h1>
+    <p id="sysSub">5S • Rooms • Assets • Maintenance • Location Control</p>
+  </header>
+
+  <nav id="nav"></nav>
+
+  <div class="container">
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboard" class="page active">
+      <h2>Management Dashboard</h2>
+      <div id="cards" class="grid"></div>
+      
+      <div class="card">
+        <h3>Department Status</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Rooms</th>
+              <th>Assets</th>
+              <th>Missing</th>
+              <th>Repair</th>
+              <th>5S Score</th>
+            </tr>
+          </thead>
+          <tbody id="dept"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ROOMS PAGE -->
+    <div id="rooms" class="page">
+      <h2>Buildings & Rooms</h2>
+      <button onclick="roomForm()">Add Room</button>
+      <table>
+        <thead>
+          <tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible Person</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="roomsT"></tbody>
+      </table>
+    </div>
+
+    <!-- ASSET REGISTER PAGE -->
+    <div id="assets" class="page">
+      <h2>Asset Register</h2>
+      <button onclick="assetForm()">Add Asset</button>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Type</th><th>Name</th><th>Department</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="assetsT"></tbody>
+      </table>
+    </div>
+
+    <!-- LOCATION CONTROL PAGE -->
+    <div id="location" class="page">
+      <h2>Location Control</h2>
+      <table>
+        <thead>
+          <tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody id="locT"></tbody>
+      </table>
+    </div>
+
+    <!-- MAINTENANCE PAGE -->
+    <div id="maintenance" class="page">
+      <h2>Maintenance</h2>
+      <div id="mcards" class="grid"></div>
+      <button onclick="maintForm()">Record Maintenance</button>
+      <table>
+        <thead>
+          <tr><th>Asset</th><th>ID</th><th>Last Done</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr>
+        </thead>
+        <tbody id="maintT"></tbody>
+      </table>
+    </div>
+
+    <!-- 5S AUDIT PAGE -->
+    <div id="audit" class="page">
+      <h2>5S Audit</h2>
+      <button onclick="auditForm()">New Audit</button>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Department</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Set</th><th>Shine</th><th>Std</th><th>Sustain</th><th>Score</th></tr>
+        </thead>
+        <tbody id="auditT"></tbody>
+      </table>
+    </div>
+
+    <!-- ACTIONS PAGE -->
+    <div id="actions" class="page">
+      <h2>Corrective Actions</h2>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr>
+        </thead>
+        <tbody id="actionsT"></tbody>
+      </table>
+    </div>
+
+    <!-- REPORTS PAGE -->
+    <div id="reports" class="page">
+      <h2>Reports</h2>
+      <label>Select Room: <select id="reportRoom" onchange="renderRoomReport()"></select></label>
+      <button onclick="printRoomReport()">Print</button>
+      <button onclick="downloadRoomReport()">Download CSV</button>
+      <div id="roomReport"></div>
+      <br>
+      <pre id="summary"></pre>
+    </div>
+
+    <!-- CONTROL PANEL PAGE -->
+    <div id="control" class="page">
+      <h2>Control Panel</h2>
+      <div class="card">
+        <h3>System Settings</h3>
+        <label>System Title: <input id="cpName"></label><br><br>
+        <label>Subtitle: <input id="cpSubtitle"></label><br><br>
+        <label>Currency: <input id="cpCurrency"></label><br><br>
+        <button onclick="cpSaveSettings()">Save Settings</button>
+      </div>
+      <br>
+      <button onclick="cpBackup()">Download Backup</button>
+      <input type="file" id="restoreFile" onchange="cpRestoreBackup(event)" style="display:none">
+      <button onclick="document.getElementById('restoreFile').click()">Restore Backup</button>
+    </div>
+
+    <!-- USERS PAGE -->
+    <div id="users" class="page">
+      <h2>User Management</h2>
+      <button onclick="userForm()">Add User</button>
+      <table>
+        <thead>
+          <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="usersT"></tbody>
+      </table>
+    </div>
+
+    <!-- ACTIVITY LOG PAGE -->
+    <div id="activity" class="page">
+      <h2>Activity Log</h2>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr>
+        </thead>
+        <tbody id="activityT"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL CONTAINER -->
+  <div id="modal">
+    <div class="modal-content" id="box"></div>
+  </div>
+
+  <!-- FIREBASE MODULE SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AlzaSyC-Fb4VCU0R7aNtO--4CyYCXnsYG-hdu-w",
+      authDomain: "park-5s-system.firebaseapp.com",
+      projectId: "park-5s-system",
+      storageBucket: "park-5s-system.firebasestorage.app",
+      messagingSenderId: "949666018852",
+      appId: "1:949666018852:web:a96333bd7f22e1e6cc4ab1",
+      measurementId: "G-P4Q8FCJZD5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const storage = getStorage(app);
+
+    window.uploadAssetPhoto = async function(file, assetId) {
+      if (!file) return "";
+      const fileName = `assets/${assetId}_${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    };
+  </script>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    const DEPTS = ["Reception", "OPD", "Pharmacy", "Ward", "Kitchen", "Account", "Marketing", "HR", "Maintenance", "Crown"];
+    
+    let db = JSON.parse(localStorage.getItem("park5s") || "null") || {
+      rooms: [
+        { id: 1, building: "Main Building", floor: "Ground Floor", dept: "Reception", room: "Reception Area", person: "Reception In-Charge", status: "Active" },
+        { id: 2, building: "Main Building", floor: "Ground Floor", dept: "OPD", room: "Consultation Room 01", person: "OPD In-Charge", status: "Active" }
+      ],
+      assets: [
+        { id: "PH-OPD-EB-001", name: "Examination Bed", dept: "OPD", room: "Consultation Room 01", condition: "Good", purchase: "2024-05-12", value: 250000, status: "Active", last: "2026-08-10", next: "2026-11-10", history: [] }
+      ],
+      audits: [], actions: [], maintenance: [], users: [], activity: []
+    };
+
+    function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
+    function close() { modal.style.display = "none"; }
+    function open(x) { box.innerHTML = x; modal.style.display = "flex"; }
+
+    function go(id) {
+      document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      render();
+    }
+
+    function render() {
+      let today = new Date().toISOString().slice(0, 10),
+        missingCount = db.assets.filter(a => a.status == "Missing").length,
+        repair = db.assets.filter(a => a.condition == "Needs Repair" || a.condition == "Beyond Repair").length,
+        due = db.assets.filter(a => a.next && a.next <= today).length;
+
+      nav.innerHTML = [
+        ["dashboard", "Dashboard"], ["rooms", "Buildings & Rooms"], ["assets", "Asset Register"], 
+        ["location", "Location Control"], ["maintenance", "Maintenance"], ["audit", "5S Audit"], 
+        ["actions", "Actions"], ["reports", "Reports"], ["control", "Control Panel"]
+      ].map(x => `<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+
+      cards.innerHTML = [
+        ["Buildings", [...new Set(db.rooms.map(r => r.building))].length], 
+        ["Rooms", db.rooms.length], 
+        ["Registered Assets", db.assets.length], 
+        ["Missing", missingCount], 
+        ["Needs Repair", repair], 
+        ["Maintenance Due", due]
+      ].map(x => `<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+
+      roomsT.innerHTML = db.rooms.map(r => `<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+      assetsT.innerHTML = db.assets.map(a => `<tr><td>${a.id}</td><td>${a.type || "Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase || "-"}</td><td>Rs. ${(+a.value || 0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button></td></tr>`).join("");
+      locT.innerHTML = db.assets.map(a => `<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status == "Missing" ? 0 : 1}</td><td><span class="badge ${a.status == "Missing" ? "bad" : "ok"}">${a.status == "Missing" ? "Missing" : "Present"}</span></td><td>${a.status == "Missing" ? "Investigate" : "Verified"}</td></tr>`).join("");
+      mcards.innerHTML = [["Due Today/Overdue", due], ["Under Maintenance", db.assets.filter(a => a.status == "Under Maintenance").length], ["Needs Repair", repair]].map(x => `<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+      maintT.innerHTML = db.assets.filter(a => a.last || a.next).map(a => `<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last || "-"}</td><td>${a.next || "-"}</td><td>-</td><td>Rs. ${(+a.value || 0).toLocaleString()}</td></tr>`).join("");
+      auditT.innerHTML = db.audits.map(a => `<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v => `<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x, y) => x + y, 0) / 20 * 100)}%</td></tr>`).join("");
+      actionsT.innerHTML = db.actions.map(a => `<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
+
+      dept.innerHTML = DEPTS.map(d => {
+        let r = db.rooms.filter(x => x.dept == d), a = db.assets.filter(x => x.dept == d), au = db.audits.filter(x => x.dept == d);
+        let sc = au.length ? Math.round(au.reduce((t, x) => t + x.vals.reduce((p, q) => p + q, 0) / 20 * 100, 0) / au.length) : 0;
+        return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x => x.status == "Missing").length}</td><td>${a.filter(x => x.condition.includes("Repair")).length}</td><td>${sc ? sc + "%" : "—"}</td></tr>`;
+      }).join("");
+
+      summary.textContent = JSON.stringify({ generated: new Date().toISOString(), rooms: db.rooms.length, assets: db.assets.length, missing: missingCount, needsRepair: repair, maintenanceDue: due }, null, 2);
+    }
+
+    render();
+  </script>
+</body>
+</html>
