@@ -293,21 +293,37 @@ function cpBackup(){
  let blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
  let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="PARK_5S_Full_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();
 }
-function cpRestoreBackup(event){
- if(!cpAdmin()){alert("Admin access required.");return}
- let f=event.target.files[0];if(!f)return;
- let r=new FileReader();
- r.onload=function(){
-  try{
-   let x=JSON.parse(r.result);
-   if(!x.database)throw new Error("Invalid backup file");
-   localStorage.setItem("park5sConfig",JSON.stringify(x.config||CP_DEFAULTS));
-   localStorage.setItem("park5s",JSON.stringify(x.database));
-   alert("Backup restored. The system will reload.");
-   location.reload();
-  }catch(e){alert("Restore failed: "+e.message)}
- };
- r.readAsText(f);
+function cpRestoreBackup(event) {
+  if (!cpAdmin()) return;
+  let f = event.target.files[0];
+  if (!f) return;
+
+  let r = new FileReader();
+  r.onload = function() {
+    try {
+      let x = JSON.parse(r.result);
+      if (!x.database) throw new Error("Invalid backup file format");
+
+      // Strip heavy base64 photos to stay well under the 5MB browser quota
+      if (Array.isArray(x.database.assets)) {
+        x.database.assets.forEach(asset => {
+          if (asset.photo && asset.photo.startsWith("data:image")) {
+            asset.photo = ""; // Remove inline Base64 payload
+          }
+        });
+      }
+
+      // Save stripped database and config
+      localStorage.setItem("park5sConfig", JSON.stringify(x.config || CP_DEFAULTS));
+      localStorage.setItem("park5s", JSON.stringify(x.database));
+
+      alert("Backup restored successfully! (Large image payloads were omitted to fit storage limits).");
+      location.reload();
+    } catch (e) {
+      alert("Restore failed: " + e.message);
+    }
+  };
+  r.readAsText(f);
 }
 function cpResetConfig(){
  if(!cpAdmin()){alert("Admin access required.");return}
