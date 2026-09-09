@@ -150,22 +150,54 @@ function suggestedAssetCode(){
 }
 function fillSuggestedAssetCode(){ai.value=suggestedAssetCode()}
 
-function saveAsset(old){
-    let photo0=db.assets.find(x=>x.id==old)?.photo||"";
-    let f=photo.files[0];
-    let done=p=>{
-        let id=ai.value.trim()||suggestedAssetCode();
-        let duplicate=db.assets.find(x=>x.id===id&&x.id!==old);
-        if(duplicate){
-            alert("This exact identification code already exists. Please generate a new code.");
-            return;
-        }
-        let o={id,name:an.value,type:at.value,dept:ad.value,room:ar.value,condition:ac.value,purchase:ap.value,value:+av.value||0,status:as.value,last:al.value,next:nx.value,photo:p,history:db.assets.find(x=>x.id==old)?.history||[]};
-        let i=db.assets.findIndex(x=>x.id==old);
-        i>=0?db.assets[i]=o:db.assets.push(o);
-        close();
-        save();
-    };
+async function saveAsset(old) {
+  let photoInput = document.getElementById("photo");
+  let file = photoInput?.files[0];
+  let existingPhoto = db.assets.find(x => x.id === old)?.photo || "";
+  let photoUrl = existingPhoto;
+
+  // 1. Generate/validate asset ID
+  let id = ai.value.trim() || suggestedAssetCode();
+  let duplicate = db.assets.find(x => x.id === id && x.id !== old);
+  if (duplicate) {
+    alert("This exact identification code already exists. Please generate a new code.");
+    return;
+  }
+
+  // 2. Upload file to Firebase Storage if a new file is selected
+  if (file) {
+    try {
+      photoUrl = await window.uploadAssetPhoto(file, id);
+    } catch (error) {
+      console.error("Firebase Storage Upload Error:", error);
+      alert("Failed to upload image. Saving asset without updating photo.");
+    }
+  }
+
+  // 3. Save light HTTPS URL to local database record
+  let o = {
+    id,
+    name: an.value,
+    type: at.value,
+    dept: ad.value,
+    room: ar.value,
+    condition: ac.value,
+    purchase: ap.value,
+    value: +av.value || 0,
+    status: as.value,
+    last: al.value,
+    next: nx.value,
+    photo: photoUrl, // Stores simple "https://firebasestorage.googleapis.com/..." link
+    history: db.assets.find(x => x.id === old)?.history || []
+  };
+
+  let i = db.assets.findIndex(x => x.id === old);
+  if (i >= 0) db.assets[i] = o;
+  else db.assets.push(o);
+
+  close();
+  save();
+}
     if(f){
         let r=new FileReader();
         r.onload=()=>done(r.result);
