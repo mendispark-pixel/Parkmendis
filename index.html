@@ -368,4 +368,22 @@ const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","
 protectedMutations.forEach(name=>{let original=window[name];window[name]=function(...args){if(!requireAdmin())return;let result=original.apply(this,args);if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);return result}});
 const originalRender=render;render=function(){originalRender();renderSecurity()};
 securitySetup();render();
+</script><script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // Your Firebase config from the console setup screen
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.dbCloud = getFirestore(app);
+  window.storageCloud = getStorage(app);
 </script></body></html>
