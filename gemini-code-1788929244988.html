@@ -270,6 +270,54 @@
     <button onclick="close()">Cancel</button>
   `);
 }
+    function saveAsset(isEdit) {
+  let baseId = document.getElementById("assetId").value.trim();
+  let type = document.getElementById("assetType").value;
+  let name = document.getElementById("assetName").value;
+  let dept = document.getElementById("assetDept").value;
+  let room = document.getElementById("assetRoom").value;
+  let condition = document.getElementById("assetCondition").value;
+  let purchase = document.getElementById("assetPurchase").value;
+  let value = parseFloat(document.getElementById("assetValue").value) || 0;
+  let status = document.getElementById("assetStatus").value;
+
+  if (!baseId || !name) {
+    alert("Asset ID and Name are required.");
+    return;
+  }
+
+  if (isEdit) {
+    let oldId = document.getElementById("assetOldId").value;
+    let idx = db.assets.findIndex(x => x.id === oldId);
+    if (idx !== -1) {
+      db.assets[idx] = { ...db.assets[idx], type, name, dept, room, condition, purchase, value, status };
+    }
+  } else {
+    let qty = parseInt(document.getElementById("assetQty").value) || 1;
+
+    for (let i = 0; i < qty; i++) {
+      let uniqueId = qty > 1 ? `${baseId}-${(i + 1).toString().padStart(3, '0')}` : baseId;
+      
+      db.assets.push({
+        id: uniqueId,
+        type: type,
+        name: name,
+        dept: dept,
+        room: room,
+        condition: condition,
+        purchase: purchase,
+        value: value,
+        status: status,
+        last: "",
+        next: "",
+        history: []
+      });
+    }
+  }
+
+  save();
+  close();
+}
     function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
     function close() { modal.style.display = "none"; }
     function open(x) { box.innerHTML = x; modal.style.display = "flex"; }
