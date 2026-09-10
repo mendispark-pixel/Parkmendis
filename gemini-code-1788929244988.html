@@ -382,49 +382,57 @@
       close();
     }
 
-    function renderRoomReport() {
-      let selectedRoom = document.getElementById("reportRoom").value;
-      let filteredAssets = db.assets.filter(a => a.room === selectedRoom);
+function renderRoomReport() {
+  let selectedRoom = document.getElementById("reportRoom").value;
+  let filteredAssets = db.assets.filter(a => a.room === selectedRoom);
+  let container = document.getElementById("roomReport");
 
-      if (filteredAssets.length === 0) {
-        document.getElementById("roomReport").innerHTML = `<p>No assets registered for this room.</p>`;
-        return;
-      }
+  if (!selectedRoom) {
+    container.innerHTML = "";
+    return;
+  }
 
-      let html = `
-        <br>
-        <h3>Asset Report for: ${selectedRoom}</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>ID</th>
-              <th>Type</th>
-              <th>Name</th>
-              <th>Condition</th>
-              <th>Status</th>
-              <th>Value (Rs.)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredAssets.map(a => `
-              <tr>
-                <td>
-                  ${a.photo ? `<img src="${a.photo}" alt="Asset Photo" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">` : `<span style="color:#aaa;">No Photo</span>`}
-                </td>
-                <td>${a.id}</td>
-                <td>${a.type || "Equipment"}</td>
-                <td>${a.name}</td>
-                <td>${a.condition}</td>
-                <td>${a.status}</td>
-                <td>Rs. ${(+a.value || 0).toLocaleString()}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-      document.getElementById("roomReport").innerHTML = html;
-    }
+  if (filteredAssets.length === 0) {
+    container.innerHTML = `<p style="padding: 10px;">No assets registered for this room.</p>`;
+    return;
+  }
+
+  let html = `
+    <h3>${selectedRoom} — ${filteredAssets.length} item(s)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Identification Code</th>
+          <th>Type</th>
+          <th>Item / Equipment</th>
+          <th>Department</th>
+          <th>Condition</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filteredAssets.map(a => `
+          <tr>
+            <td style="text-align: center; width: 70px;">
+              ${a.photo 
+                ? `<img src="${a.photo}" alt="Asset" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">` 
+                : `<span style="color: #aaa; font-size: 12px;">No Photo</span>`}
+            </td>
+            <td>${a.id}</td>
+            <td>${a.type || "Equipment"}</td>
+            <td>${a.name}</td>
+            <td>${a.dept}</td>
+            <td>${a.condition}</td>
+            <td>${a.status}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  container.innerHTML = html;
+}
 
     function populateReportSelect() {
       let reportSelect = document.getElementById("reportRoom");
