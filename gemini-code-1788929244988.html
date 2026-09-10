@@ -215,6 +215,287 @@
       return await getDownloadURL(storageRef);
     };
   </script>
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    const DEPTS = ["Reception", "OPD", "Pharmacy", "Ward", "Kitchen", "Account", "Marketing", "HR", "Maintenance", "Crown"];
+    
+    let db = JSON.parse(localStorage.getItem("park5s") || "null") || {
+      rooms: [
+        { id: 1, building: "Main Building", floor: "Ground Floor", dept: "Reception", room: "Reception Area", person: "Reception In-Charge", status: "Active" },
+        { id: 2, building: "Main Building", floor: "Ground Floor", dept: "OPD", room: "Consultation Room 01", person: "OPD In-Charge", status: "Active" }
+      ],
+      assets: [
+        { id: "PH-OPD-EB-001", name: "Examination Bed", dept: "OPD", room: "Consultation Room 01", condition: "Good", purchase: "2024-05-12", value: 250000, status: "Active", photo: "", last: "2026-08-10", next: "2026-11-10", history: [] }
+      ],
+      audits: [], actions: [], maintenance: [], users: [], activity: []
+    };
+
+    // Form modal
+    function assetForm(a) {
+      let isEdit = !!a;
+      open(`
+        <h3>${isEdit ? "Edit Asset" : "Add Machine, Equipment or Small Item"}</h3>
+        <input type="hidden" id="assetOldId" value="${a ? a.id : ''}">
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: left;">
+          <div>
+            <label><b>Identification Code</b></label><br>
+            <input id="assetId" value="${a ? a.id : ''}" ${isEdit ? 'disabled' : ''} style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div>
+            <label><b>Item Type</b></label><br>
+            <select id="assetType" style="width: 100%; padding: 8px; box-sizing: border-box;">
+              <option ${a && a.type === 'Equipment' ? 'selected' : ''}>Equipment</option>
+              <option ${a && a.type === 'Machine' ? 'selected' : ''}>Machine</option>
+              <option ${a && a.type === 'Small Item' ? 'selected' : ''}>Small Item</option>
+            </select>
+          </div>
+          <div>
+            <label><b>Item / Equipment</b></label><br>
+            <input id="assetName" value="${a ? a.name || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label><b>Department</b></label><br>
+            <select id="assetDept" style="width: 100%; padding: 8px; box-sizing: border-box;">
+              ${DEPTS.map(d => `<option value="${d}" ${a && a.dept === d ? 'selected' : ''}>${d}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label><b>Room</b></label><br>
+            <select id="assetRoom" style="width: 100%; padding: 8px; box-sizing: border-box;">
+              ${db.rooms.map(r => `<option value="${r.room}" ${a && a.room === r.room ? 'selected' : ''}>${r.room}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label><b>Condition</b></label><br>
+            <select id="assetCondition" style="width: 100%; padding: 8px; box-sizing: border-box;">
+              <option ${a && a.condition === 'Good' ? 'selected' : ''}>Good</option>
+              <option ${a && a.condition === 'Needs Repair' ? 'selected' : ''}>Needs Repair</option>
+              <option ${a && a.condition === 'Beyond Repair' ? 'selected' : ''}>Beyond Repair</option>
+            </select>
+          </div>
+
+          <div>
+            <label><b>Purchase Date</b></label><br>
+            <input type="date" id="assetPurchase" value="${a ? a.purchase || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div>
+            <label><b>Value (Rs.)</b></label><br>
+            <input type="number" id="assetValue" value="${a ? a.value || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div>
+            <label><b>Status</b></label><br>
+            <select id="assetStatus" style="width: 100%; padding: 8px; box-sizing: border-box;">
+              <option ${a && a.status === 'Active' ? 'selected' : ''}>Active</option>
+              <option ${a && a.status === 'Missing' ? 'selected' : ''}>Missing</option>
+              <option ${a && a.status === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
+            </select>
+          </div>
+
+          <div>
+            <label><b>Photo File</b></label><br>
+            <input type="file" id="assetPhoto" accept="image/*" style="width: 100%; padding: 5px; box-sizing: border-box;">
+          </div>
+
+          ${!isEdit ? `
+          <div>
+            <label><b>Quantity</b></label><br>
+            <input type="number" id="assetQty" value="1" min="1" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          ` : ''}
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button id="saveBtn" onclick="saveAsset(${isEdit})" style="background: #0b3c5d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Save</button>
+          <button onclick="close()" style="background: #3282b8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Cancel</button>
+        </div>
+      `);
+    }
+
+    // Save Asset with Async Upload
+    async function saveAsset(isEdit) {
+      let baseId = document.getElementById("assetId").value.trim();
+      let name = document.getElementById("assetName").value;
+      let saveBtn = document.getElementById("saveBtn");
+      let fileInput = document.getElementById("assetPhoto");
+
+      if (!baseId || !name) {
+        alert("Asset ID and Name are required.");
+        return;
+      }
+
+      let photoUrl = "";
+
+      // Handle Upload
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        try {
+          if (saveBtn) saveBtn.innerText = "Uploading photo...";
+          photoUrl = await window.uploadAssetPhoto(fileInput.files[0], baseId);
+          console.log("Uploaded photo URL:", photoUrl);
+        } catch (err) {
+          console.error("Firebase upload failed:", err);
+          alert("Photo upload failed. Check browser console for errors.");
+        }
+      }
+
+      if (isEdit) {
+        let oldId = document.getElementById("assetOldId").value;
+        let idx = db.assets.findIndex(x => x.id === oldId);
+        if (idx !== -1) {
+          db.assets[idx] = { 
+            ...db.assets[idx], 
+            type: document.getElementById("assetType").value,
+            name: name,
+            dept: document.getElementById("assetDept").value,
+            room: document.getElementById("assetRoom").value,
+            condition: document.getElementById("assetCondition").value,
+            purchase: document.getElementById("assetPurchase").value,
+            value: parseFloat(document.getElementById("assetValue").value) || 0,
+            status: document.getElementById("assetStatus").value,
+            photo: photoUrl || db.assets[idx].photo || ""
+          };
+        }
+      } else {
+        let qty = parseInt(document.getElementById("assetQty").value) || 1;
+        for (let i = 0; i < qty; i++) {
+          let uniqueId = qty > 1 ? `${baseId}-${(i + 1).toString().padStart(3, '0')}` : baseId;
+          db.assets.push({
+            id: uniqueId,
+            type: document.getElementById("assetType").value,
+            name: name,
+            dept: document.getElementById("assetDept").value,
+            room: document.getElementById("assetRoom").value,
+            condition: document.getElementById("assetCondition").value,
+            purchase: document.getElementById("assetPurchase").value,
+            value: parseFloat(document.getElementById("assetValue").value) || 0,
+            status: document.getElementById("assetStatus").value,
+            photo: photoUrl,
+            last: "", next: "", history: []
+          });
+        }
+      }
+
+      save();
+      close();
+    }
+
+    // Render Room Report Table
+    function renderRoomReport() {
+      let selectedRoom = document.getElementById("reportRoom").value;
+      let filteredAssets = db.assets.filter(a => a.room === selectedRoom);
+      let container = document.getElementById("roomReport");
+
+      if (!container) return;
+      if (!selectedRoom) { container.innerHTML = ""; return; }
+
+      if (filteredAssets.length === 0) {
+        container.innerHTML = `<p style="padding: 10px;">No assets registered for this room.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <br>
+        <h3>${selectedRoom} — ${filteredAssets.length} item(s)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Identification Code</th>
+              <th>Type</th>
+              <th>Item / Equipment</th>
+              <th>Department</th>
+              <th>Condition</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredAssets.map(a => `
+              <tr>
+                <td style="text-align: center;">
+                  ${a.photo ? `<img src="${a.photo}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">` : `<span style="color:#aaa; font-size: 11px;">No photo</span>`}
+                </td>
+                <td>${a.id}</td>
+                <td>${a.type || "Equipment"}</td>
+                <td>${a.name}</td>
+                <td>${a.dept}</td>
+                <td>${a.condition}</td>
+                <td>${a.status}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function populateReportSelect() {
+      let reportSelect = document.getElementById("reportRoom");
+      if (reportSelect) {
+        let currentVal = reportSelect.value;
+        reportSelect.innerHTML = `<option value="">-- Select Room --</option>` + 
+          db.rooms.map(r => `<option value="${r.room}" ${r.room === currentVal ? 'selected' : ''}>${r.room}</option>`).join("");
+      }
+    }
+
+    function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
+    function close() { modal.style.display = "none"; }
+    function open(x) { box.innerHTML = x; modal.style.display = "flex"; }
+
+    function go(id) {
+      document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      render();
+    }
+
+    function render() {
+      let today = new Date().toISOString().slice(0, 10),
+        missingCount = db.assets.filter(a => a.status == "Missing").length,
+        repair = db.assets.filter(a => a.condition == "Needs Repair" || a.condition == "Beyond Repair").length,
+        due = db.assets.filter(a => a.next && a.next <= today).length;
+
+      nav.innerHTML = [
+        ["dashboard", "Dashboard"], ["rooms", "Buildings & Rooms"], ["assets", "Asset Register"], 
+        ["location", "Location Control"], ["maintenance", "Maintenance"], ["audit", "5S Audit"], 
+        ["actions", "Actions"], ["reports", "Reports"], ["control", "Control Panel"]
+      ].map(x => `<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+
+      cards.innerHTML = [
+        ["Buildings", [...new Set(db.rooms.map(r => r.building))].length], 
+        ["Rooms", db.rooms.length], 
+        ["Registered Assets", db.assets.length], 
+        ["Missing", missingCount], 
+        ["Needs Repair", repair], 
+        ["Maintenance Due", due]
+      ].map(x => `<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+
+      roomsT.innerHTML = db.rooms.map(r => `<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+      
+      assetsT.innerHTML = db.assets.map(a => `
+        <tr>
+          <td>${a.id}</td>
+          <td>${a.type || "Equipment"}</td>
+          <td>${a.name}</td>
+          <td>${a.dept}</td>
+          <td>${a.room}</td>
+          <td>${a.condition}</td>
+          <td>${a.purchase || "-"}</td>
+          <td>Rs. ${(+a.value || 0).toLocaleString()}</td>
+          <td>${a.status}</td>
+          <td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button></td>
+        </tr>
+      `).join("");
+
+      populateReportSelect();
+      renderRoomReport();
+    }
+
+    // Global bindings for HTML inline onclick event handlers
+    window.saveAsset = saveAsset;
+    window.renderRoomReport = renderRoomReport;
+    window.assetForm = assetForm;
+
+    render();
+  </script>
 
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
