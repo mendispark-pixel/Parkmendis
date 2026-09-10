@@ -29,10 +29,16 @@
 </head>
 <body>
 
-  <header>
+  <header style="display: flex; justify-content: space-between; align-items: center;">
+  <div>
     <h1 id="sysTitle">PARK 5S System</h1>
     <p id="sysSub">5S • Rooms • Assets • Maintenance • Location Control</p>
-  </header>
+  </div>
+  <div id="userInfo" style="display: none; text-align: right;">
+    <span id="userDisplay" style="font-weight: bold;"></span> <br>
+    <button onclick="handleLogout()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; font-size: 12px; border-radius: 4px; margin-top: 5px; cursor: pointer;">Sign Out</button>
+  </div>
+</header>
 
   <nav id="nav"></nav>
 
@@ -59,6 +65,18 @@
         </table>
       </div>
     </div>
+    <!-- LOGIN MODAL OVERLAY -->
+<div id="loginModal" style="display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;">
+  <div style="background: white; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    <h2 style="margin-top:0; color: #0b3c5d;">Sign In</h2>
+    <label><b>Username</b></label>
+    <input type="text" id="loginUser" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
+    <label><b>Password</b></label>
+    <input type="password" id="loginPass" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
+    <button onclick="handleLogin()" style="width: 100%; padding: 10px; background: #0b3c5d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
+    <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px; display: none;"></p>
+  </div>
+</div>
 
     <!-- ROOMS PAGE -->
     <div id="rooms" class="page">
@@ -792,7 +810,206 @@ function renderRoomReport() {
     window.renderRoomReport = renderRoomReport;
 
     render();
-  </script>
+  const ALL_MODULES = [
+  { id: "dashboard", label: "Dashboard" },
+  { id: "rooms", label: "Buildings & Rooms" },
+  { id: "assets", label: "Asset Register" },
+  { id: "location", label: "Location Control" },
+  { id: "maintenance", label: "Maintenance" },
+  { id: "audit", label: "5S Audit" },
+  { id: "actions", label: "Actions" },
+  { id: "reports", label: "Reports" },
+  { id: "control", label: "Control Panel" },
+  { id: "users", label: "User Management" }
+];
+
+const DEPTS = ["Reception", "OPD", "Pharmacy", "Ward", "Kitchen", "Account", "Marketing", "HR", "Maintenance", "Crown"];
+
+// Load or initialize DB state
+let db = JSON.parse(localStorage.getItem("park5s") || "null") || {
+  rooms: [
+    { id: 1, building: "Main Building", floor: "Ground Floor", dept: "Reception", room: "Reception Area", person: "Reception In-Charge", status: "Active" }
+  ],
+  assets: [], audits: [], actions: [], maintenance: [],
+  users: [
+    {
+      username: "admin",
+      password: "admin123",
+      name: "System Admin",
+      role: "Admin",
+      status: "Active",
+      permissions: ALL_MODULES.map(m => m.id).concat(["canEdit"])
+    }
+  ],
+  activity: []
+};
+
+let currentUser = null;
+
+// Auth Functions
+function handleLogin() {
+  let u = document.getElementById("loginUser").value.trim();
+  let p = document.getElementById("loginPass").value.trim();
+  let err = document.getElementById("loginError");
+
+  let found = db.users.find(x => x.username === u && x.password === p && x.status === "Active");
+  if (found) {
+    currentUser = found;
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("userInfo").style.display = "block";
+    document.getElementById("userDisplay").innerText = `${currentUser.name} (${currentUser.role})`;
+    err.style.display = "none";
+    
+    // Default navigate to first permitted page
+    let firstPage = ALL_MODULES.find(m => hasPerm(m.id))?.id || "dashboard";
+    go(firstPage);
+  } else {
+    err.innerText = "Invalid credentials or disabled account.";
+    err.style.display = "block";
+  }
+}
+
+function handleLogout() {
+  currentUser = null;
+  document.getElementById("loginModal").style.display = "flex";
+  document.getElementById("userInfo").style.display = "none";
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginPass").value = "";
+}
+
+function hasPerm(permKey) {
+  if (!currentUser) return false;
+  if (currentUser.role === "Admin") return true;
+  return Array.isArray(currentUser.permissions) && currentUser.permissions.includes(permKey);
+}
+
+// User Management Form (Admin Only)
+function userForm(u) {
+  let isEdit = !!u;
+  let userPerms = u ? (u.permissions || []) : [];
+
+  open(`
+    <h3>${isEdit ? "Edit User Permissions" : "Add New System User"}</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
+      <div>
+        <label><b>Username</b></label><br>
+        <input id="uUsername" value="${u ? u.username : ''}" ${isEdit ? 'disabled' : ''} style="width:100%; padding:6px;">
+      </div>
+      <div>
+        <label><b>Full Name</b></label><br>
+        <input id="uName" value="${u ? u.name : ''}" style="width:100%; padding:6px;">
+      </div>
+      <div>
+        <label><b>Password</b></label><br>
+        <input type="password" id="uPass" value="${u ? u.password : ''}" style="width:100%; padding:6px;">
+      </div>
+      <div>
+        <label><b>Role</b></label><br>
+        <select id="uRole" style="width:100%; padding:6px;">
+          <option ${u && u.role === 'Admin' ? 'selected' : ''}>Admin</option>
+          <option ${u && u.role === 'User' ? 'selected' : ''}>User</option>
+        </select>
+      </div>
+    </div>
+
+    <h4 style="text-align: left; margin: 15px 0 5px;">Access & Module Permissions</h4>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+      ${ALL_MODULES.map(m => `
+        <label style="font-size:13px;">
+          <input type="checkbox" class="permCheck" value="${m.id}" ${userPerms.includes(m.id) ? 'checked' : ''}>
+          ${m.label}
+        </label>
+      `).join('')}
+      <label style="font-size:13px; grid-column: span 2; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+        <input type="checkbox" class="permCheck" value="canEdit" ${userPerms.includes('canEdit') ? 'checked' : ''}>
+        Allow Edit/Add/Delete Actions
+      </label>
+    </div>
+
+    <div style="margin-top: 15px; text-align: left;">
+      <button onclick="saveUser(${isEdit})" style="background:#0b3c5d; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Save User</button>
+      <button onclick="close()" style="background:#6c757d; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Cancel</button>
+    </div>
+  `);
+}
+
+function saveUser(isEdit) {
+  let username = document.getElementById("uUsername").value.trim();
+  let name = document.getElementById("uName").value.trim();
+  let password = document.getElementById("uPass").value.trim();
+  let role = document.getElementById("uRole").value;
+
+  if (!username || !password) {
+    alert("Username and Password are required.");
+    return;
+  }
+
+  let permissions = Array.from(document.querySelectorAll(".permCheck:checked")).map(x => x.value);
+
+  if (isEdit) {
+    let idx = db.users.findIndex(x => x.username === username);
+    if (idx !== -1) {
+      db.users[idx] = { ...db.users[idx], name, password, role, permissions };
+    }
+  } else {
+    if (db.users.some(x => x.username === username)) {
+      alert("Username already exists.");
+      return;
+    }
+    db.users.push({ username, name, password, role, status: "Active", permissions });
+  }
+
+  save();
+  close();
+}
+
+function render() {
+  if (!currentUser) return;
+
+  // Render Navigation bar filtered by permission
+  let nav = document.getElementById("nav");
+  nav.innerHTML = ALL_MODULES
+    .filter(m => hasPerm(m.id))
+    .map(x => `<button onclick="go('${x.id}')">${x.label}</button>`)
+    .join("");
+
+  // Render User Table (Users page)
+  let usersT = document.getElementById("usersT");
+  if (usersT) {
+    usersT.innerHTML = db.users.map(u => `
+      <tr>
+        <td>${u.username}</td>
+        <td>${u.name}</td>
+        <td>${u.role}</td>
+        <td><span class="badge ok">${u.status}</span></td>
+        <td>${(u.permissions || []).join(", ")}</td>
+        <td>
+          ${hasPerm("canEdit") ? `<button onclick='userForm(${JSON.stringify(u)})'>Edit Access</button>` : 'View Only'}
+        </td>
+      </tr>
+    `).join("");
+  }
+}
+
+function go(id) {
+  if (!hasPerm(id)) {
+    alert("You do not have permission to access this module.");
+    return;
+  }
+  document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  render();
+}
+
+function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
+function close() { document.getElementById("modal").style.display = "none"; }
+function open(x) { document.getElementById("box").innerHTML = x; document.getElementById("modal").style.display = "flex"; }
+
+// Bind global variables for inline click handles
+window.handleLogin = handleLogin;
+window.handleLogout = handleLogout;
+window.userForm = userForm;
+window.saveUser = saveUser;</script>
 
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
