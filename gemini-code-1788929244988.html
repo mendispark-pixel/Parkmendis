@@ -78,7 +78,7 @@
       <button onclick="assetForm()">Add Asset</button>
       <table>
         <thead>
-          <tr><th>ID</th><th>Type</th><th>Name</th><th>Department</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th>Actions</th></tr>
+          <tr><th>ID</th><th>Type</th><th>Name</th><th>Department</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Quantity</th></tr><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody id="assetsT"></tbody>
       </table>
@@ -231,6 +231,45 @@
       audits: [], actions: [], maintenance: [], users: [], activity: []
     };
 
+    function assetForm(a) {
+  let isEdit = !!a;
+  open(`
+    <h3>${isEdit ? "Edit Asset" : "Add Asset"}</h3>
+    <input type="hidden" id="assetOldId" value="${a ? a.id : ''}">
+    <label>Asset ID / Code Base: <input id="assetId" value="${a ? a.id : ''}" ${isEdit ? 'disabled' : ''}></label><br><br>
+    <label>Type: <input id="assetType" value="${a ? a.type || '' : ''}"></label><br><br>
+    <label>Name: <input id="assetName" value="${a ? a.name || '' : ''}"></label><br><br>
+    <label>Department: 
+      <select id="assetDept">
+        ${DEPTS.map(d => `<option value="${d}" ${a && a.dept === d ? 'selected' : ''}>${d}</option>`).join('')}
+      </select>
+    </label><br><br>
+    <label>Room: 
+      <select id="assetRoom">
+        ${db.rooms.map(r => `<option value="${r.room}" ${a && a.room === r.room ? 'selected' : ''}>${r.room}</option>`).join('')}
+      </select>
+    </label><br><br>
+    <label>Condition: 
+      <select id="assetCondition">
+        <option ${a && a.condition==='Good'?'selected':''}>Good</option>
+        <option ${a && a.condition==='Needs Repair'?'selected':''}>Needs Repair</option>
+        <option ${a && a.condition==='Beyond Repair'?'selected':''}>Beyond Repair</option>
+      </select>
+    </label><br><br>
+    <label>Purchase Date: <input type="date" id="assetPurchase" value="${a ? a.purchase || '' : ''}"></label><br><br>
+    <label>Value: <input type="number" id="assetValue" value="${a ? a.value || 0 : 0}"></label><br><br>
+    <label>Status: 
+      <select id="assetStatus">
+        <option ${a && a.status==='Active'?'selected':''}>Active</option>
+        <option ${a && a.status==='Missing'?'selected':''}>Missing</option>
+        <option ${a && a.status==='Under Maintenance'?'selected':''}>Under Maintenance</option>
+      </select>
+    </label><br><br>
+    ${!isEdit ? `<label>Quantity to Add: <input type="number" id="assetQty" value="1" min="1"></label><br><br>` : ''}
+    <button onclick="saveAsset(${isEdit})">Save</button>
+    <button onclick="close()">Cancel</button>
+  `);
+}
     function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
     function close() { modal.style.display = "none"; }
     function open(x) { box.innerHTML = x; modal.style.display = "flex"; }
