@@ -234,6 +234,95 @@
     function assetForm(a) {
   let isEdit = !!a;
   open(`
+    <h3>${isEdit ? "Edit Asset" : "Add Machine, Equipment or Small Item"}</h3>
+    <input type="hidden" id="assetOldId" value="${a ? a.id : ''}">
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: left;">
+      <div>
+        <label><b>Identification Code</b></label><br>
+        <input id="assetId" value="${a ? a.id : ''}" placeholder="Generated from room and type" ${isEdit ? 'disabled' : ''} style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label><b>Item Type</b></label><br>
+        <select id="assetType" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          <option ${a && a.type === 'Equipment' ? 'selected' : ''}>Equipment</option>
+          <option ${a && a.type === 'Machine' ? 'selected' : ''}>Machine</option>
+          <option ${a && a.type === 'Small Item' ? 'selected' : ''}>Small Item</option>
+        </select>
+      </div>
+      <div>
+        <label><b>Item / Equipment</b></label><br>
+        <input id="assetName" value="${a ? a.name || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+
+      <div>
+        <label><b>Department</b></label><br>
+        <select id="assetDept" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          ${DEPTS.map(d => `<option value="${d}" ${a && a.dept === d ? 'selected' : ''}>${d}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label><b>Room</b></label><br>
+        <select id="assetRoom" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          ${db.rooms.map(r => `<option value="${r.room}" ${a && a.room === r.room ? 'selected' : ''}>${r.room}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label><b>Condition</b></label><br>
+        <select id="assetCondition" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          <option ${a && a.condition === 'Good' ? 'selected' : ''}>Good</option>
+          <option ${a && a.condition === 'Needs Repair' ? 'selected' : ''}>Needs Repair</option>
+          <option ${a && a.condition === 'Beyond Repair' ? 'selected' : ''}>Beyond Repair</option>
+        </select>
+      </div>
+
+      <div>
+        <label><b>Purchase Date</b></label><br>
+        <input type="date" id="assetPurchase" value="${a ? a.purchase || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label><b>Value (Rs.)</b></label><br>
+        <input type="number" id="assetValue" value="${a ? a.value || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label><b>Status</b></label><br>
+        <select id="assetStatus" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          <option ${a && a.status === 'Active' ? 'selected' : ''}>Active</option>
+          <option ${a && a.status === 'Missing' ? 'selected' : ''}>Missing</option>
+          <option ${a && a.status === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
+        </select>
+      </div>
+
+      <div>
+        <label><b>Last Maintenance</b></label><br>
+        <input type="date" id="assetLast" value="${a ? a.last || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label><b>Next Maintenance Due</b></label><br>
+        <input type="date" id="assetNext" value="${a ? a.next || '' : ''}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label><b>Photo</b></label><br>
+        <input type="file" id="assetPhoto" style="width: 100%; padding: 5px; box-sizing: border-box;">
+      </div>
+
+      ${!isEdit ? `
+      <div>
+        <label><b>Quantity</b></label><br>
+        <input type="number" id="assetQty" value="1" min="1" style="width: 100%; padding: 8px; box-sizing: border-box; border: 2px solid #0b3c5d;">
+      </div>
+      ` : ''}
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+      ${!isEdit ? `<button onclick="generateCode()" style="background: #0b3c5d; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">Generate Identification Code</button>` : ''}
+      <button onclick="saveAsset(${isEdit})" style="background: #0b3c5d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Save</button>
+      <button onclick="close()" style="background: #3282b8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Cancel</button>
+    </div>
+  `);
+}
+  let isEdit = !!a;
+  open(`
     <h3>${isEdit ? "Edit Asset" : "Add Asset"}</h3>
     <input type="hidden" id="assetOldId" value="${a ? a.id : ''}">
     <label>Asset ID / Code Base: <input id="assetId" value="${a ? a.id : ''}" ${isEdit ? 'disabled' : ''}></label><br><br>
