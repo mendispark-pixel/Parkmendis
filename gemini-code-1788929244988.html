@@ -407,6 +407,37 @@
   save();
   close();
 }
+    // Replace saveAsset in your script to upload photos to Firebase first
+async function saveAsset(isEdit) {
+  let baseId = document.getElementById("assetId").value.trim();
+  let fileInput = document.getElementById("assetPhoto");
+  let photoUrl = "";
+
+  // 1. Upload file to Firebase if selected
+  if (fileInput && fileInput.files[0]) {
+    photoUrl = await window.uploadAssetPhoto(fileInput.files[0], baseId);
+  }
+
+  // 2. Save asset with image URL link
+  let assetObj = {
+    id: baseId,
+    type: document.getElementById("assetType").value,
+    name: document.getElementById("assetName").value,
+    dept: document.getElementById("assetDept").value,
+    room: document.getElementById("assetRoom").value,
+    condition: document.getElementById("assetCondition").value,
+    purchase: document.getElementById("assetPurchase").value,
+    value: parseFloat(document.getElementById("assetValue").value) || 0,
+    status: document.getElementById("assetStatus").value,
+    photo: photoUrl, // Stores clean URL string
+    last: document.getElementById("assetLast")?.value || "",
+    next: document.getElementById("assetNext")?.value || ""
+  };
+
+  db.assets.push(assetObj);
+  save();
+  close();
+}
     function save() { localStorage.setItem("park5s", JSON.stringify(db)); render(); }
     function close() { modal.style.display = "none"; }
     function open(x) { box.innerHTML = x; modal.style.display = "flex"; }
