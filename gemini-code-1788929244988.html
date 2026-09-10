@@ -215,34 +215,6 @@
       return await getDownloadURL(storageRef);
     };
   </script>
-  <!-- FIREBASE MODULE SCRIPT -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AlzaSyC-Fb4VCU0R7aNtO--4CyYCXnsYG-hdu-w",
-      authDomain: "park-5s-system.firebaseapp.com",
-      projectId: "park-5s-system",
-      storageBucket: "park-5s-system.firebasestorage.app",
-      messagingSenderId: "949666018852",
-      appId: "1:949666018852:web:a96333bd7f22e1e6cc4ab1",
-      measurementId: "G-P4Q8FCJZD5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const storage = getStorage(app);
-
-    window.uploadAssetPhoto = async function(file, assetId) {
-      if (!file) return "";
-      const fileName = `assets/${assetId}_${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      return await getDownloadURL(storageRef);
-    };
-  </script>
 
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
