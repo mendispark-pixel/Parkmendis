@@ -28,7 +28,18 @@
   </style>
 </head>
 <body>
-
+<!-- LOGIN OVERLAY -->
+  <div id="loginModal" style="display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+      <h2 style="margin-top:0; color: #0b3c5d;">Sign In</h2>
+      <label><b>Username</b></label>
+      <input type="text" id="loginUser" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
+      <label><b>Password</b></label>
+      <input type="password" id="loginPass" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
+      <button onclick="handleLogin()" style="width: 100%; padding: 10px; background: #0b3c5d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
+      <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px; display: none;"></p>
+    </div>
+  </div>
   <header style="display: flex; justify-content: space-between; align-items: center;">
   <div>
     <h1 id="sysTitle">PARK 5S System</h1>
@@ -65,18 +76,6 @@
         </table>
       </div>
     </div>
-    <!-- LOGIN MODAL OVERLAY -->
-<div id="loginModal" style="display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;">
-  <div style="background: white; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-    <h2 style="margin-top:0; color: #0b3c5d;">Sign In</h2>
-    <label><b>Username</b></label>
-    <input type="text" id="loginUser" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
-    <label><b>Password</b></label>
-    <input type="password" id="loginPass" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
-    <button onclick="handleLogin()" style="width: 100%; padding: 10px; background: #0b3c5d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
-    <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px; display: none;"></p>
-  </div>
-</div>
 
     <!-- ROOMS PAGE -->
     <div id="rooms" class="page">
@@ -176,17 +175,18 @@
       <button onclick="document.getElementById('restoreFile').click()">Restore Backup</button>
     </div>
 
-    <!-- USERS PAGE -->
+   <!-- USERS PAGE -->
     <div id="users" class="page">
-      <h2>User Management</h2>
-      <button onclick="userForm()">Add User</button>
+      <h2>User Access Management</h2>
+      <button onclick="userForm()" style="margin-bottom:10px;">Add New User</button>
       <table>
         <thead>
-          <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+          <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Allowed Modules</th><th>Actions</th></tr>
         </thead>
         <tbody id="usersT"></tbody>
       </table>
     </div>
+  </div>
 
     <!-- ACTIVITY LOG PAGE -->
     <div id="activity" class="page">
