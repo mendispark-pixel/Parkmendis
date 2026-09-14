@@ -29,6 +29,8 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 <section id="redtag" class="page"><h2>🔴 Red Tag System</h2>
 <div class="notice">Used during 5S Sort activities to flag items that are unnecessary, misplaced, damaged, or of unclear ownership. Tagged items move to a holding area until a disposition decision is made.</div>
 <button onclick="redTagForm()" class="redbtn">+ New Red Tag</button> <button onclick="printRedTagList()">Print Red Tag List</button>
+<!-- Example of rendering a print button inside a Red Tag table row -->
+<button onclick="printRedTag('RT-2026-0001')">Print Red Tag</button>
 <div class="panel"><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Linked Asset</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th><th></th></tr></thead><tbody id="redtagT"></tbody></table></div>
 </section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="exportData()">Export JSON</button> <button onclick="print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
