@@ -245,6 +245,70 @@ function printRedTag(id) {
             body { background: white; padding: 0; }
             .tag { page-break-inside: avoid; }
         }
+    </style></head><body>
+    <div class="tag-container">
+        <!-- FRONT SIDE -->
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div class="field">
+                        <div class="field-label">Item / Description:</div>
+                        <div class="line">${safe(t.item)} (${safe(t.assetId || "Unregistered")})</div>
+                    </div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Not Needed' ? 'checked' : ''}"></span> NOT REQUIRED</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Damaged / Beyond Repair' ? 'checked' : ''}"></span> TO BE REPAIRED</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Wrong Location' ? 'checked' : ''}"></span> PLACE IN STORAGE</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Excess Quantity' ? 'checked' : ''}"></span> SCRAP</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Other' ? 'checked' : ''}"></span> OTHER</div>
+                    </div>
+                </div>
+                <div style="font-size: 9px; text-align: center; color: #777;">PARK 5S Management System</div>
+            </div>
+            <div class="footer-line">PARK 5S System • Sort Activity Tag</div>
+        </div>
+
+        <!-- BACK SIDE -->
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div class="field">
+                        <div class="field-label">DATE</div>
+                        <div class="line">${safe(t.date)}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">RAISED BY:</div>
+                        <div class="line">${safe(t.taggedBy || "—")}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">SECTION / DEPT:</div>
+                        <div class="line">${safe(t.dept)} — ${safe(t.room)}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">NOTES:</div>
+                        <div class="line">${safe(t.note || "—")}</div>
+                    </div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="field"><div class="line"></div></div>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                    TAG NO. <span class="tag-no-box">${safe(t.id)}</span>
+                </div>
+            </div>
+            <div class="footer-line">PARK 5S System • Sort Activity Tag</div>
+        </div>
+    </div>
+    </body></html>`);
+
+    w.document.close();
+    w.print();
+}
 function printRedTagList(){
  let w=window.open("","_blank");
  if(!w){alert("Please allow pop-ups for this site to print the list.");return}
