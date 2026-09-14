@@ -220,48 +220,92 @@ function resolveRedTag(id){
  close();
  save();
 }
-// Function to display and print a single Red Tag by its ID
 function printRedTag(id) {
-    // 1. Find the target red tag item in the database
-    let t = db.redtags.find(x => x.id === id);
-    if (!t) return;
-
-    // 2. Open a new browser window/tab for printing[cite: 1]
+    let t = db.redtags.find(x => x.id === id); if (!t) return;
     let w = window.open("", "_blank");
-    if (!w) {
-        alert("Please allow pop-ups for this site to print the red tag.");
-        return;
-    }
+    if (!w) { alert("Please allow pop-ups for this site to print the red tag."); return; }
 
-    // 3. Write the tag display template into the print window[cite: 1]
     w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
-        body { font-family: Arial; padding: 20px; }
-        .tag { border: 4px solid #b91c1c; border-radius: 10px; max-width: 380px; padding: 16px; margin: auto; }
-        .tag h1 { background: #b91c1c; color: #fff; text-align: center; margin: -16px -16px 12px -16px; padding: 12px; border-radius: 6px 6px 0 0; font-size: 22px; }
-        .tag table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .tag td { padding: 6px 4px; border-bottom: 1px dashed #ccc; vertical-align: top; }
-        .tag td.label { font-weight: bold; width: 38%; color: #555; }
-        .tagfoot { text-align: center; font-size: 11px; color: #888; margin-top: 10px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; display: flex; justify-content: center; }
+        .tag-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .tag { width: 300px; background: #d32f2f; padding: 12px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); box-sizing: border-box; }
+        .hole { width: 24px; height: 24px; background: #fff; border: 4px solid #b71c1c; border-radius: 50%; margin: 4px auto 12px; }
+        .tag-title { background: #fff; color: #d32f2f; text-align: center; font-size: 20px; font-weight: 900; padding: 6px 0; border-radius: 3px; letter-spacing: 1px; margin-bottom: 10px; }
+        .tag-body { background: #fff; padding: 12px; border-radius: 3px; min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #b71c1c; font-weight: bold; }
+        .field { margin-bottom: 8px; }
+        .field-label { margin-bottom: 2px; text-transform: uppercase; }
+        .line { border-bottom: 1.5px solid #d32f2f; min-height: 16px; color: #222; font-weight: normal; font-size: 12px; padding: 1px 2px; }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 4px; }
+        .box { width: 10px; height: 10px; border: 1.5px solid #d32f2f; border-radius: 50%; display: inline-block; text-align: center; line-height: 8px; font-size: 10px; }
+        .box.checked { background: #d32f2f; color: #fff; }
+        .tag-no-box { border: 1.5px solid #d32f2f; border-radius: 10px; padding: 2px 8px; display: inline-block; color: #222; margin-left: 4px; }
+        .footer-line { font-size: 8px; text-align: center; color: #fff; margin-top: 8px; }
+        @media print {
+            body { background: white; padding: 0; }
+            .tag { page-break-inside: avoid; }
+        }
     </style></head><body>
-    <div class="tag">
-        <h1>🔴 RED TAG</h1>
-        <table>
-            <tr><td class="label">Tag #</td><td>${safe(t.id)}</td></tr>
-            <tr><td class="label">Date</td><td>${safe(t.date)}</td></tr>
-            <tr><td class="label">Item</td><td>${safe(t.item)}</td></tr>
-            <tr><td class="label">Asset ID</td><td>${safe(t.assetId || "—")}</td></tr>
-            <tr><td class="label">Department</td><td>${safe(t.dept)}</td></tr>
-            <tr><td class="label">Location</td><td>${safe(t.room)}</td></tr>
-            <tr><td class="label">Reason</td><td>${safe(t.reason)}</td></tr>
-            <tr><td class="label">Notes</td><td>${safe(t.note || "—")}</td></tr>
-            <tr><td class="label">Tagged By</td><td>${safe(t.taggedBy || "—")}</td></tr>
-            <tr><td class="label">Status</td><td>${safe(t.status)}</td></tr>
-        </table>
-        <p class="tagfoot">Do not remove this tag. Contact the 5S Committee for disposition.</p>
+    <div class="tag-container">
+        <!-- FRONT SIDE -->
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div class="field">
+                        <div class="field-label">Item / Description:</div>
+                        <div class="line">${safe(t.item)} (${safe(t.assetId || "Unregistered")})</div>
+                    </div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Not Needed' ? 'checked' : ''}"></span> NOT REQUIRED</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Damaged / Beyond Repair' ? 'checked' : ''}"></span> TO BE REPAIRED</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Wrong Location' ? 'checked' : ''}"></span> PLACE IN STORAGE</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Excess Quantity' ? 'checked' : ''}"></span> SCRAP</div>
+                        <div class="checkbox-item"><span class="box ${t.reason === 'Other' ? 'checked' : ''}"></span> OTHER</div>
+                    </div>
+                </div>
+                <div style="font-size: 9px; text-align: center; color: #777;">PARK 5S Management System</div>
+            </div>
+            <div class="footer-line">PARK 5S System • Sort Activity Tag</div>
+        </div>
+
+        <!-- BACK SIDE -->
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div class="field">
+                        <div class="field-label">DATE</div>
+                        <div class="line">${safe(t.date)}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">RAISED BY:</div>
+                        <div class="line">${safe(t.taggedBy || "—")}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">SECTION / DEPT:</div>
+                        <div class="line">${safe(t.dept)} — ${safe(t.room)}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">NOTES:</div>
+                        <div class="line">${safe(t.note || "—")}</div>
+                    </div>
+                    <div class="field"><div class="line"></div></div>
+                    <div class="field"><div class="line"></div></div>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                    TAG NO. <span class="tag-no-box">${safe(t.id)}</span>
+                </div>
+            </div>
+            <div class="footer-line">PARK 5S System • Sort Activity Tag</div>
+        </div>
     </div>
     </body></html>`);
 
-    // 4. Trigger print functionality[cite: 1]
     w.document.close();
     w.print();
 }
