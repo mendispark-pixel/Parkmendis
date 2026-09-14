@@ -24,7 +24,7 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 <section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
 <section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
 <section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
-<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
+<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div>To call this function from your table or view list, attach it to an onclick event handler passing the Red Tag ID[cite: 1]:</section>
 
 <section id="redtag" class="page"><h2>🔴 Red Tag System</h2>
 <div class="notice">Used during 5S Sort activities to flag items that are unnecessary, misplaced, damaged, or of unclear ownership. Tagged items move to a holding area until a disposition decision is made.</div>
@@ -271,6 +271,8 @@ function printRedTagList(){
  w.document.close();
  w.print();
 }
+    <!-- Example of rendering a print button inside a Red Tag table row -->
+<button onclick="printRedTag('RT-2026-0001')">Print Red Tag</button>
 /* =================== END RED TAG SYSTEM ==================== */
 
 function maintForm(){open(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
