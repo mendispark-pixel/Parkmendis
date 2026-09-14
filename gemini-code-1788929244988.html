@@ -233,6 +233,62 @@
       await uploadBytes(storageRef, file);
       return await getDownloadURL(storageRef);
     };
+  // Modify the existing saveAsset function
+async function saveAsset(isEdit) {
+  let baseId = document.getElementById("assetId").value.trim();
+  let condition = document.getElementById("assetCondition").value;
+  let name = document.getElementById("assetName").value;
+  let dept = document.getElementById("assetDept").value;
+  let room = document.getElementById("assetRoom").value;
+
+  if (!baseId || !name) {
+    alert("Asset ID and Name are required.");
+    return;
+  }
+
+  // Auto-flag for Disposal/Red Tagging if Condition is 'Beyond Repair'
+  let isRedTagged = condition === "Beyond Repair";
+  let status = isRedTagged ? "Awaiting Disposal" : document.getElementById("assetStatus").value;
+
+  let assetObj = {
+    id: baseId,
+    type: document.getElementById("assetType").value,
+    name: name,
+    dept: dept,
+    room: room,
+    condition: condition,
+    purchase: document.getElementById("assetPurchase").value,
+    value: parseFloat(document.getElementById("assetValue").value) || 0,
+    status: status,
+    redTagged: isRedTagged,
+    taggedDate: isRedTagged ? new Date().toISOString().slice(0, 10) : null
+  };
+
+  if (isEdit) {
+    let oldId = document.getElementById("assetOldId").value;
+    let idx = db.assets.findIndex(x => x.id === oldId);
+    if (idx !== -1) {
+      db.assets[idx] = { ...db.assets[idx], ...assetObj };
+    }
+  } else {
+    db.assets.push(assetObj);
+  }
+
+  // Automatically add an entry into Actions table if tagged for disposal
+  if (isRedTagged) {
+    db.actions.push({
+      date: new Date().toISOString().slice(0, 10),
+      type: "5S Red Tag",
+      item: `${name} (${baseId})`,
+      location: `${dept} - ${room}`,
+      finding: "Condition marked Beyond Repair. Slated for Disposal.",
+      status: "Open"
+    });
+  }
+
+  save();
+  close();
+}
   </script>
   <!-- UNIFIED APPLICATION LOGIC SCRIPT -->
   <script>
@@ -308,6 +364,50 @@
       if (currentUser.role === "Admin") return true;
       return Array.isArray(currentUser.permissions) && currentUser.permissions.includes(permKey);
     }
+    window.downloadRedTag = function(assetId) {
+  let asset = db.assets.find(a => a.id === assetId);
+  if (!asset) return alert("Asset not found.");
+
+  let printWindow = window.open('', '', 'width=700,height=750');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>5S RED TAG - ${asset.id}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 30px; display: flex; justify-content: center; }
+        .red-tag-card { 
+          width: 100%; max-width: 450px; border: 6px solid #dc3545; padding: 20px; 
+          border-radius: 8px; background: #fff8f8; box-sizing: border-box;
+        }
+        .header { 
+          background: #dc3545; color: white; text-align: center; padding: 12px; 
+          font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-bottom: 20px; 
+        }
+        .field { margin-bottom: 12px; font-size: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 6px; }
+        .field b { color: #0b3c5d; }
+        .footer { margin-top: 25px; text-align: center; font-size: 12px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="red-tag-card">
+        <div class="header">⚠️ 5S RED TAG (DISPOSAL)</div>
+        <div class="field"><b>Tag Date:</b> ${asset.taggedDate || new Date().toISOString().slice(0, 10)}</div>
+        <div class="field"><b>Asset ID:</b> ${asset.id}</div>
+        <div class="field"><b>Item Name:</b> ${asset.name}</div>
+        <div class="field"><b>Department:</b> ${asset.dept}</div>
+        <div class="field"><b>Location/Room:</b> ${asset.room}</div>
+        <div class="field"><b>Condition:</b> ${asset.condition}</div>
+        <div class="field"><b>Action Needed:</b> Remove / Disposal</div>
+        <div class="footer">PARK 5S Management System • Generated Tag</div>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 250);
+};
 
     // User Access Management
     function userForm(u) {
@@ -406,6 +506,23 @@
       ],
       audits: [], actions: [], maintenance: [], users: [], activity: []
     };
+    assetsT.innerHTML = db.assets.map(a => `
+  <tr>
+    <td>${a.id}</td>
+    <td>${a.type || "Equipment"}</td>
+    <td>${a.name}</td>
+    <td>${a.dept}</td>
+    <td>${a.room}</td>
+    <td>${a.condition}</td>
+    <td>${a.purchase || "-"}</td>
+    <td>Rs. ${(+a.value || 0).toLocaleString()}</td>
+    <td>${a.status}</td>
+    <td>
+      <button onclick='assetForm(${JSON.stringify(a)})'>Edit</button>
+      ${a.condition === 'Beyond Repair' ? `<button onclick="downloadRedTag('${a.id}')" style="background:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer; margin-left:4px;">Print Red Tag</button>` : ''}
+    </td>
+  </tr>
+`).join('');
 
     // Form modal
     function assetForm(a) {
