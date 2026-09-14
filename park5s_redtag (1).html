@@ -271,8 +271,7 @@ function printRedTagList(){
  w.document.close();
  w.print();
 }
-    <!-- Example of rendering a print button inside a Red Tag table row -->
-<button onclick="printRedTag('RT-2026-0001')">Print Red Tag</button>
+
 /* =================== END RED TAG SYSTEM ==================== */
 
 function maintForm(){open(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
