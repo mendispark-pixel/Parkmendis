@@ -37,6 +37,7 @@
       <label><b>Password</b></label>
       <input type="password" id="loginPass" style="width: 100%; padding: 8px; margin: 8px 0 15px; box-sizing: border-box;">
       <button onclick="handleLogin()" style="width: 100%; padding: 10px; background: #0b3c5d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
+      <button onclick="printRedTag('PH-OPD-EB-001')">Download Red Tag</button>
       <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px; display: none;"></p>
     </div>
   </div>
@@ -838,7 +839,40 @@
       save();
       close();
     }
+function printRedTag(assetId) {
+  let asset = db.assets.find(a => a.id === assetId);
+  if (!asset) return alert("Asset not found");
 
+  let printWindow = window.open('', '', 'width=600,height=600');
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>RED TAG - ${asset.id}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .red-tag { border: 5px solid #dc3545; padding: 20px; background: #fff5f5; }
+        .header { background: #dc3545; color: white; padding: 10px; text-align: center; font-size: 24px; font-weight: bold; }
+        .field { margin: 12px 0; font-size: 16px; }
+      </style>
+    </head>
+    <body>
+      <div class="red-tag">
+        <div class="header">5S RED TAG - DISPOSAL</div>
+        <div class="field"><b>Tag ID:</b> RT-${Date.now()}</div>
+        <div class="field"><b>Item Code:</b> ${asset.id}</div>
+        <div class="field"><b>Item Name:</b> ${asset.name}</div>
+        <div class="field"><b>Department:</b> ${asset.dept}</div>
+        <div class="field"><b>Location:</b> ${asset.room}</div>
+        <div class="field"><b>Reason for Tagging:</b> Beyond Repair / Disposal</div>
+        <div class="field"><b>Date Tagged:</b> ${new Date().toISOString().slice(0, 10)}</div>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
 function renderRoomReport() {
   let selectedRoom = document.getElementById("reportRoom").value;
   let filteredAssets = db.assets.filter(a => a.room === selectedRoom);
