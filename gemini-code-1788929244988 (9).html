@@ -990,6 +990,103 @@ function printRedTag(assetId) {
   printWindow.focus();
   printWindow.print();
 }
+function printRedTag(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ let w=window.open("","_blank");
+ if(!w){alert("Please allow pop-ups for this site to print the red tag.");return}
+ 
+ const itemTypes = ["Raw Materials", "Finished Goods", "WIP", "Machine Parts", "Tools", "Instruments", "Equipment", "Other"];
+ const tagReasons = ["No Longer Used", "Doesn't Work", "Unknown Owner", "Other"];
+ const actions = ["Trash", "Hold", "Move to", "Contact", "Other"];
+
+ let linkedAsset = t.assetId ? db.assets.find(a => a.id === t.assetId) : null;
+ let inferredType = linkedAsset ? linkedAsset.type : "Other";
+
+ w.document.write(`<html><head><title>5S Red Tag - ${safe(t.id)}</title><style>
+ @page { size: auto; margin: 10mm; }
+ body { font-family: 'Arial Black', Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 20px; display: flex; gap: 20px; justify-content: center; }
+ .tag-side { width: 340px; background: #ff2222; color: #000; padding: 18px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; position: relative; }
+ .hole { width: 28px; height: 28px; background: #fff; border: 3px solid #000; border-radius: 50%; margin: 0 auto 10px auto; }
+ h1 { text-align: center; font-size: 32px; font-weight: 900; margin: 0 0 6px 0; border-bottom: 4px solid #000; padding-bottom: 2px; letter-spacing: -1px; }
+ h1 span { font-size: 40px; }
+ h2 { text-align: center; font-size: 15px; font-weight: 900; margin: 10px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+ .row { display: flex; font-size: 13px; font-weight: bold; margin-bottom: 6px; align-items: flex-end; }
+ .line { flex: 1; border-bottom: 2px solid #000; margin-left: 6px; padding-left: 4px; font-family: Arial, sans-serif; font-weight: normal; min-height: 16px; }
+ .stars { text-align: center; font-size: 10px; margin: 8px 0; letter-spacing: 1px; }
+ .grid-check { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; font-size: 12px; font-family: Arial, sans-serif; font-weight: bold; margin: 6px 0; }
+ .check-item { display: flex; align-items: center; gap: 6px; }
+ .box { width: 13px; height: 13px; border: 2px solid #000; display: inline-block; background: #fff; text-align: center; line-height: 11px; font-size: 11px; font-weight: bold; }
+ .box.checked::after { content: "✓"; }
+ .footer { margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; font-weight: bold; border-top: 2px solid #000; padding-top: 6px; }
+ .tag-num-box { border: 2px solid #000; padding: 2px 6px; background: #fff; font-family: monospace; font-size: 12px; font-weight: bold; }
+ @media print {
+   body { background: none; padding: 0; }
+   .tag-side { page-break-inside: avoid; box-shadow: none; }
+ }
+ </style></head><body>
+
+ <!-- FRONT SIDE -->
+ <div class="tag-side">
+  <div class="hole"></div>
+  <h1><span>5S</span> RED TAG</h1>
+  <div class="row">Date <div class="line">${safe(t.date)}</div> Tagged By <div class="line">${safe(t.taggedBy||"")}</div></div>
+  <div class="row">Item Description <div class="line">${safe(t.item)}</div></div>
+  <div class="row">Found Where? <div class="line">${safe(t.room)} (${safe(t.dept)})</div></div>
+  
+  <div class="stars">★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★</div>
+  <h2>ITEM TYPE</h2>
+  <div class="grid-check">
+   ${itemTypes.map(type => `<div class="check-item"><span class="box ${inferredType.toLowerCase().includes(type.toLowerCase().slice(0,4))?'checked':''}"></span> ${type}</div>`).join("")}
+  </div>
+  <div class="row" style="margin-top:6px;">Other <div class="line">${!itemTypes.some(x=>inferredType.toLowerCase().includes(x.toLowerCase().slice(0,4)))?safe(inferredType):""}</div></div>
+
+  <div class="stars">★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★</div>
+  <h2>WHY DID YOU TAG THIS?</h2>
+  <div class="grid-check">
+   ${tagReasons.map(reason => `<div class="check-item"><span class="box ${t.reason.toLowerCase().includes(reason.toLowerCase().slice(0,4))?'checked':''}"></span> ${reason}</div>`).join("")}
+  </div>
+  <div class="row" style="margin-top:6px;"><div class="line" style="margin-left:0;">${t.note ? safe(t.note) : ""}</div></div>
+
+  <div class="footer">
+   <span>PARK 5S SYSTEM</span>
+   <span>TAG #${safe(t.id)}</span>
+  </div>
+ </div>
+
+ <!-- BACK SIDE -->
+ <div class="tag-side">
+  <div class="hole"></div>
+  <h1><span>5S</span> RED TAG</h1>
+  <h2>ACTION TO TAKE</h2>
+  <div style="display:flex; flex-direction:column; gap:6px; margin: 10px 0;">
+   ${actions.map(act => `
+    <div class="check-item" style="font-size:13px; font-family:Arial, sans-serif; font-weight:bold;">
+     <span class="box ${t.disposition && t.disposition.toLowerCase().includes(act.toLowerCase().slice(0,4))?'checked':''}"></span> 
+     ${act}
+     ${act === "Move to" || act === "Contact" || act === "Other" ? `<div class="line">${t.dispositionNote?safe(t.dispositionNote):""}</div>` : ''}
+    </div>
+   `).join("")}
+  </div>
+  <div class="line" style="margin: 12px 0;"></div>
+
+  <div class="row" style="margin-top:15px;">Date <div class="line">${safe(t.dispositionDate||"")}</div> Manager's Initials <div class="line"></div></div>
+
+  <div class="stars">★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★</div>
+  <h2>COMMENTS</h2>
+  <div class="line" style="margin-bottom:8px;">${safe(t.dispositionNote||"")}</div>
+  <div class="line" style="margin-bottom:8px;"></div>
+  <div class="line" style="margin-bottom:8px;"></div>
+
+  <div class="footer">
+   <div style="display:flex; align-items:center; gap:6px;">No. <div class="tag-num-box">${safe(t.id)}</div></div>
+   <span>PARK 5S SYSTEM</span>
+  </div>
+ </div>
+
+ </body></html>`);
+ w.document.close();
+ w.print();
+}
 function renderRoomReport() {
   let selectedRoom = document.getElementById("reportRoom").value;
   let filteredAssets = db.assets.filter(a => a.room === selectedRoom);
