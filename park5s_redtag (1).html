@@ -218,38 +218,50 @@ function resolveRedTag(id){
  close();
  save();
 }
-function printRedTag(id){
- let t=db.redtags.find(x=>x.id===id);if(!t)return;
- let w=window.open("","_blank");
- if(!w){alert("Please allow pop-ups for this site to print the red tag.");return}
- w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
- body{font-family:Arial;padding:20px}
- .tag{border:4px solid #b91c1c;border-radius:10px;max-width:380px;padding:16px;margin:auto}
- .tag h1{background:#b91c1c;color:#fff;text-align:center;margin:-16px -16px 12px -16px;padding:12px;border-radius:6px 6px 0 0;font-size:22px}
- .tag table{width:100%;border-collapse:collapse;font-size:13px}
- .tag td{padding:6px 4px;border-bottom:1px dashed #ccc;vertical-align:top}
- .tag td.label{font-weight:bold;width:38%;color:#555}
- .tagfoot{text-align:center;font-size:11px;color:#888;margin-top:10px}
- </style></head><body>
- <div class="tag">
- <h1>🔴 RED TAG</h1>
- <table>
- <tr><td class=label>Tag #</td><td>${safe(t.id)}</td></tr>
- <tr><td class=label>Date</td><td>${safe(t.date)}</td></tr>
- <tr><td class=label>Item</td><td>${safe(t.item)}</td></tr>
- <tr><td class=label>Asset ID</td><td>${safe(t.assetId||"—")}</td></tr>
- <tr><td class=label>Department</td><td>${safe(t.dept)}</td></tr>
- <tr><td class=label>Location</td><td>${safe(t.room)}</td></tr>
- <tr><td class=label>Reason</td><td>${safe(t.reason)}</td></tr>
- <tr><td class=label>Notes</td><td>${safe(t.note||"—")}</td></tr>
- <tr><td class=label>Tagged By</td><td>${safe(t.taggedBy||"—")}</td></tr>
- <tr><td class=label>Status</td><td>${safe(t.status)}</td></tr>
- </table>
- <p class=tagfoot>Do not remove this tag. Contact the 5S Committee for disposition.</p>
- </div>
- </body></html>`);
- w.document.close();
- w.print();
+// Function to display and print a single Red Tag by its ID
+function printRedTag(id) {
+    // 1. Find the target red tag item in the database
+    let t = db.redtags.find(x => x.id === id);
+    if (!t) return;
+
+    // 2. Open a new browser window/tab for printing[cite: 1]
+    let w = window.open("", "_blank");
+    if (!w) {
+        alert("Please allow pop-ups for this site to print the red tag.");
+        return;
+    }
+
+    // 3. Write the tag display template into the print window[cite: 1]
+    w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
+        body { font-family: Arial; padding: 20px; }
+        .tag { border: 4px solid #b91c1c; border-radius: 10px; max-width: 380px; padding: 16px; margin: auto; }
+        .tag h1 { background: #b91c1c; color: #fff; text-align: center; margin: -16px -16px 12px -16px; padding: 12px; border-radius: 6px 6px 0 0; font-size: 22px; }
+        .tag table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .tag td { padding: 6px 4px; border-bottom: 1px dashed #ccc; vertical-align: top; }
+        .tag td.label { font-weight: bold; width: 38%; color: #555; }
+        .tagfoot { text-align: center; font-size: 11px; color: #888; margin-top: 10px; }
+    </style></head><body>
+    <div class="tag">
+        <h1>🔴 RED TAG</h1>
+        <table>
+            <tr><td class="label">Tag #</td><td>${safe(t.id)}</td></tr>
+            <tr><td class="label">Date</td><td>${safe(t.date)}</td></tr>
+            <tr><td class="label">Item</td><td>${safe(t.item)}</td></tr>
+            <tr><td class="label">Asset ID</td><td>${safe(t.assetId || "—")}</td></tr>
+            <tr><td class="label">Department</td><td>${safe(t.dept)}</td></tr>
+            <tr><td class="label">Location</td><td>${safe(t.room)}</td></tr>
+            <tr><td class="label">Reason</td><td>${safe(t.reason)}</td></tr>
+            <tr><td class="label">Notes</td><td>${safe(t.note || "—")}</td></tr>
+            <tr><td class="label">Tagged By</td><td>${safe(t.taggedBy || "—")}</td></tr>
+            <tr><td class="label">Status</td><td>${safe(t.status)}</td></tr>
+        </table>
+        <p class="tagfoot">Do not remove this tag. Contact the 5S Committee for disposition.</p>
+    </div>
+    </body></html>`);
+
+    // 4. Trigger print functionality[cite: 1]
+    w.document.close();
+    w.print();
 }
 function printRedTagList(){
  let w=window.open("","_blank");
