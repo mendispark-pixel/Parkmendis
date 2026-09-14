@@ -11,6 +11,17 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 .control-list{margin-top:10px;max-height:220px;overflow:auto}
 .control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
 </style>
+<style>
+#control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px #0001}
+#control .card h3{margin-top:0;color:#123b5d}
+#control input{padding:8px;margin:4px 4px 4px 0}
+.control-list{margin-top:10px;max-height:220px;overflow:auto}
+.control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
+.redbtn{background:#b91c1c}
+.tagbadge{padding:4px 8px;border-radius:12px;font-size:12px;font-weight:bold}
+.tagopen{background:#fee2e2;color:#991b1b}
+.tagresolved{background:#dcfce7;color:#166534}
+</style>
 </head><body>
 <header><h1>PARK 5S System</h1><div>5S • Rooms • Assets • Maintenance • Location Control</div></header>
 <nav id="nav"></nav><main>
@@ -21,6 +32,11 @@ body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:
 <section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
 <section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
 <section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
+<section id="redtag" class="page"><h2>🔴 Red Tag System</h2>
+<div class="notice">Used during 5S Sort activities to flag items that are unnecessary, misplaced, damaged, or of unclear ownership. Tagged items move to a holding area until a disposition decision is made.</div>
+<button onclick="redTagForm()" class="redbtn">+ New Red Tag</button> <button onclick="printRedTagList()">Print Red Tag List</button>
+<div class="panel"><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Linked Asset</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th><th></th></tr></thead><tbody id="redtagT"></tbody></table></div>
+</section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="exportData()">Export JSON</button> <button onclick="print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
 
 <section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change a user's role, or set their status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
@@ -88,13 +104,13 @@ let db=JSON.parse(localStorage.getItem("park5s")||"null")||{rooms:[
 assets:[
 {id:"PH-OPD-EB-001",name:"Examination Bed",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
 {id:"PH-OPD-BP-004",name:"BP Monitor",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",history:[]}],
-audits:[],actions:[],maintenance:[]};
+audits:[],actions:[],maintenance:[],redtags:[]};
 
 function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
 function close(){modal.style.display="none"}
 function open(x){box.innerHTML=x;modal.style.display="flex"}
 function go(id){let signedIn=typeof sessionUser==="function"&&sessionUser(),admin=typeof isAdmin==="function"&&isAdmin();if(signedIn&&!admin&&typeof canAccess==="function"&&!canAccess(id)){alert("Your administrator has not given your account access to this option.");return}if(["control","users","activity"].includes(id)&&!admin){alert("Administrator access required.");if(typeof showLogin==="function")showLogin();return}document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");render()}
-nav.innerHTML=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["reports","Reports"],["control","Control Panel"]].map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+nav.innerHTML=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"],["control","Control Panel"]].map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
 
 function roomForm(r){open(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid>
 <label>Building<input id=rb value="${r?.building||""}"></label><label>Floor<input id=rf value="${r?.floor||""}"></label>
@@ -149,7 +165,102 @@ function saveAsset(old){
         r.readAsDataURL(f);
     }else done(photo0);
 }
-
+/* ===================== RED TAG SYSTEM ===================== */
+const RED_TAG_REASONS=["Not Needed","Wrong Location","Unknown Owner","Damaged / Beyond Repair","Excess Quantity","Expired","Other"];
+const RED_TAG_DISPOSITIONS=["Returned to Service","Relocated","Transferred to Another Dept","Repaired","Sold","Donated","Disposed / Scrapped"];
+function nextTagNumber(){let n=(db.redtags?.length||0)+1;return "RT-"+new Date().getFullYear()+"-"+String(n).padStart(4,"0")}
+function redTagForm(asset){
+ open(`<h2>🔴 New Red Tag</h2><div class=grid>
+ <label>Linked Asset (optional)<select id=rtAsset onchange="rtAssetPick()"><option value="">— Not a registered asset —</option>${db.assets.map(a=>`<option value="${a.id}" ${asset&&asset.id===a.id?"selected":""}>${a.id} — ${a.name}</option>`).join("")}</select></label>
+ <label>Item Description<input id=rtItem value="${asset?safe(asset.name):""}" placeholder="Item name if not a registered asset"></label>
+ <label>Department<select id=rtDept>${DEPTS.map(d=>`<option ${d==(asset?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+ <label>Room / Location<select id=rtRoom>${db.rooms.map(r=>`<option ${r.room==(asset?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
+ <label>Reason<select id=rtReason>${RED_TAG_REASONS.map(r=>`<option>${r}</option>`).join("")}</select></label>
+ <label>Tagged By<input id=rtBy value="${safe(sessionUser()?.name||"")}"></label>
+ <label>Date<input id=rtDate type=date value="${new Date().toISOString().slice(0,10)}"></label>
+ </div>
+ <label>Notes<textarea id=rtNote placeholder="Additional details..."></textarea></label>
+ <button onclick="saveRedTag()">Save Red Tag</button> <button onclick=close()>Cancel</button>`);
+}
+function rtAssetPick(){
+ let a=db.assets.find(x=>x.id===rtAsset.value);
+ if(a){rtItem.value=a.name;rtDept.value=a.dept;rtRoom.value=a.room}
+}
+function saveRedTag(){
+ let assetId=rtAsset.value,linkedAsset=assetId?db.assets.find(a=>a.id===assetId):null;
+ let item=(linkedAsset?linkedAsset.name:rtItem.value.trim());
+ if(!item){alert("Enter an item description or select a registered asset.");return}
+ let tag={id:nextTagNumber(),date:rtDate.value,assetId:assetId||"",item,dept:rtDept.value,room:rtRoom.value,reason:rtReason.value,taggedBy:rtBy.value.trim(),note:rtNote.value.trim(),status:"In Holding Area",disposition:"",dispositionNote:"",dispositionDate:""};
+ db.redtags=db.redtags||[];
+ db.redtags.push(tag);
+ if(linkedAsset)linkedAsset.status="Red Tagged";
+ db.actions.push({date:tag.date,type:"Red Tag",item:tag.item,location:tag.room,finding:"Red tagged — "+tag.reason+(tag.note?": "+tag.note:""),status:"Open"});
+ close();
+ save();
+ printRedTag(tag.id);
+}
+function resolveRedTagForm(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ open(`<h2>Resolve Red Tag ${safe(t.id)}</h2><p><b>${safe(t.item)}</b> — ${safe(t.room)} (${safe(t.dept)})</p>
+ <div class=grid>
+ <label>Disposition<select id=rdDisp>${RED_TAG_DISPOSITIONS.map(d=>`<option ${d===t.disposition?"selected":""}>${d}</option>`).join("")}</select></label>
+ <label>Date<input id=rdDate type=date value="${new Date().toISOString().slice(0,10)}"></label>
+ </div>
+ <label>Notes<textarea id=rdNote>${safe(t.dispositionNote||"")}</textarea></label>
+ <button onclick="resolveRedTag('${t.id}')">Save Disposition</button> <button onclick=close()>Cancel</button>`);
+}
+function resolveRedTag(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ t.disposition=rdDisp.value;t.dispositionNote=rdNote.value.trim();t.dispositionDate=rdDate.value;t.status="Resolved";
+ if(t.assetId){
+  let a=db.assets.find(x=>x.id===t.assetId);
+  if(a){const map={"Returned to Service":"Active","Relocated":"Active","Transferred to Another Dept":"Transferred","Repaired":"Active","Sold":"Disposed","Donated":"Disposed","Disposed / Scrapped":"Disposed"};a.status=map[t.disposition]||"Active"}
+ }
+ close();
+ save();
+}
+function printRedTag(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ let w=window.open("","_blank");
+ if(!w){alert("Please allow pop-ups for this site to print the red tag.");return}
+ w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
+ body{font-family:Arial;padding:20px}
+ .tag{border:4px solid #b91c1c;border-radius:10px;max-width:380px;padding:16px;margin:auto}
+ .tag h1{background:#b91c1c;color:#fff;text-align:center;margin:-16px -16px 12px -16px;padding:12px;border-radius:6px 6px 0 0;font-size:22px}
+ .tag table{width:100%;border-collapse:collapse;font-size:13px}
+ .tag td{padding:6px 4px;border-bottom:1px dashed #ccc;vertical-align:top}
+ .tag td.label{font-weight:bold;width:38%;color:#555}
+ .tagfoot{text-align:center;font-size:11px;color:#888;margin-top:10px}
+ </style></head><body>
+ <div class="tag">
+ <h1>🔴 RED TAG</h1>
+ <table>
+ <tr><td class=label>Tag #</td><td>${safe(t.id)}</td></tr>
+ <tr><td class=label>Date</td><td>${safe(t.date)}</td></tr>
+ <tr><td class=label>Item</td><td>${safe(t.item)}</td></tr>
+ <tr><td class=label>Asset ID</td><td>${safe(t.assetId||"—")}</td></tr>
+ <tr><td class=label>Department</td><td>${safe(t.dept)}</td></tr>
+ <tr><td class=label>Location</td><td>${safe(t.room)}</td></tr>
+ <tr><td class=label>Reason</td><td>${safe(t.reason)}</td></tr>
+ <tr><td class=label>Notes</td><td>${safe(t.note||"—")}</td></tr>
+ <tr><td class=label>Tagged By</td><td>${safe(t.taggedBy||"—")}</td></tr>
+ <tr><td class=label>Status</td><td>${safe(t.status)}</td></tr>
+ </table>
+ <p class=tagfoot>Do not remove this tag. Contact the 5S Committee for disposition.</p>
+ </div>
+ </body></html>`);
+ w.document.close();
+ w.print();
+}
+function printRedTagList(){
+ let w=window.open("","_blank");
+ if(!w){alert("Please allow pop-ups for this site to print the list.");return}
+ let rows=(db.redtags||[]).map(t=>`<tr><td>${safe(t.id)}</td><td>${safe(t.date)}</td><td>${safe(t.item)}</td><td>${safe(t.assetId||"—")}</td><td>${safe(t.dept)}</td><td>${safe(t.room)}</td><td>${safe(t.reason)}</td><td>${safe(t.taggedBy||"—")}</td><td>${safe(t.status)}</td></tr>`).join("")||"<tr><td colspan=9>No red tags recorded.</td></tr>";
+ w.document.write(`<html><head><title>Red Tag Holding List</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left;font-size:12px}th{background:#eee}h1{color:#b91c1c}</style></head><body><h1>PARK 5S — Red Tag Holding List</h1><p>Generated: ${new Date().toLocaleString()}</p><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Asset ID</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+ w.document.close();
+ w.print();
+}
+/* =================== END RED TAG SYSTEM ==================== */
 function move(id){let a=db.assets.find(x=>x.id==id);open(`<h2>Transfer Item</h2><p><b>${a.name}</b> (${a.id})</p><label>New Room<select id=nr>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Reason<textarea id=reason></textarea></label><button onclick="doMove('${id}')">Record Transfer</button> <button onclick=close()>Cancel</button>`)}
 function doMove(id){let a=db.assets.find(x=>x.id==id),from=a.room;a.room=nr.value;a.status="Active";a.history.push({date:new Date().toISOString().slice(0,10),event:"Moved",from:from,to:a.room,reason:reason.value});close();save()}
 function missing(id){let a=db.assets.find(x=>x.id==id);a.status="Missing";db.actions.push({date:new Date().toISOString().slice(0,10),type:"Missing Item",item:a.name,location:a.room,finding:"Expected item not found during physical verification.",status:"Open"});save()}
@@ -164,7 +275,7 @@ function render(){
 let today=new Date().toISOString().slice(0,10), missing=db.assets.filter(a=>a.status=="Missing").length, repair=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length,due=db.assets.filter(a=>a.next&&a.next<=today).length;
 cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 roomsT.innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
-assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button></td></tr>`).join("");
+assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button> <button onclick='redTagForm(${JSON.stringify(a)})' class="redbtn">Red Tag</button></td></tr>`).join("");
 locT.innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
 mcards.innerHTML=[["Due Today/Overdue",due],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repair]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
 maintT.innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
@@ -172,7 +283,10 @@ auditT.innerHTML=db.audits.map(a=>`<tr><td>${a.date}</td><td>${a.dept}</td><td>$
 actionsT.innerHTML=db.actions.map(a=>`<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
 dept.innerHTML=DEPTS.map(d=>{let r=db.rooms.filter(x=>x.dept==d),a=db.assets.filter(x=>x.dept==d),au=db.audits.filter(x=>x.dept==d);let sc=au.length?Math.round(au.reduce((t,x)=>t+x.vals.reduce((p,q)=>p+q,0)/20*100,0)/au.length):0;return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x=>x.status=="Missing").length}</td><td>${a.filter(x=>x.condition.includes("Repair")).length}</td><td>${sc?sc+"%":"—"}</td></tr>`}).join("");
 summary.textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing,needsRepair:repair,maintenanceDue:due},null,2);
-}
+let today=new Date().toISOString().slice(0,10), missing=db.assets.filter(a=>a.status=="Missing").length, repair=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length,due=db.assets.filter(a=>a.next&&a.next<=today).length,openTags=(db.redtags||[]).filter(t=>t.status!=="Resolved").length;
+cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due],["Red Tags (Open)",openTags]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+
+let rt=document.getElementById("redtagT");if(rt)rt.innerHTML=(db.redtags||[]).map(t=>`<tr><td>${t.id}</td><td>${t.date}</td><td>${t.item}</td><td>${t.assetId||"—"}</td><td>${t.dept}</td><td>${t.room}</td><td>${t.reason}</td><td>${t.taggedBy||"—"}</td><td><span class="tagbadge ${t.status==="Resolved"?"tagresolved":"tagopen"}">${t.status}${t.status==="Resolved"?" — "+safe(t.disposition||""):""}</span></td><td><button onclick="printRedTag('${t.id}')">Print</button>${t.status!=="Resolved"?` <button onclick="resolveRedTagForm('${t.id}')">Resolve</button>`:""}</td></tr>`).join("")||"<tr><td colspan=10>No red tags recorded.</td></tr>";}
 function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="PARK_5S_Data.json";a.click();URL.revokeObjectURL(u)}
 render();
 
@@ -266,8 +380,7 @@ const USER_DEFAULTS=[
  {id:"admin",username:"admin",name:"System Administrator",password:"admin123",role:"Admin",status:"Active",lastLogin:"",permissions:[]},
  {id:"viewer",username:"viewer",name:"Read-only Viewer",password:"viewer123",role:"Viewer",status:"Active",lastLogin:"",permissions:["reports"]}
 ];
-const PERMISSION_LINKS=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["reports","Reports"]];
-function securitySetup(){
+const PERMISSION_LINKS=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"]];
  db.users=Array.isArray(db.users)&&db.users.length?db.users:USER_DEFAULTS.map(x=>Object.assign({},x));
  db.users.forEach(u=>{if(!Array.isArray(u.permissions))u.permissions=u.role==="Admin"?[]:["reports"]});
  db.activity=Array.isArray(db.activity)?db.activity:[];
@@ -299,4 +412,14 @@ const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","
 protectedMutations.forEach(name=>{let original=window[name];window[name]=function(...args){if(!requireAdmin())return;let result=original.apply(this,args);if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);return result}});
 const originalRender=render;render=function(){originalRender();renderSecurity()};
 securitySetup();render();
+function securitySetup(){
+ db.users=Array.isArray(db.users)&&db.users.length?db.users:USER_DEFAULTS.map(x=>Object.assign({},x));
+ db.users.forEach(u=>{if(!Array.isArray(u.permissions))u.permissions=u.role==="Admin"?[]:["reports"]});
+ db.activity=Array.isArray(db.activity)?db.activity:[];
+ db.redtags=Array.isArray(db.redtags)?db.redtags:[];
+ localStorage.setItem("park5s",JSON.stringify(db));
+}
+
+const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","doMove","missing","maintForm","saveMaint","auditForm","saveAudit","redTagForm","saveRedTag","resolveRedTagForm","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpBackup","cpRestoreBackup","cpResetConfig"];
+protectedMutations.forEach(name=>{let original=window[name];window[name]=function(...args){if(!requireAdmin())return;let result=original.apply(this,args);if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","saveRedTag","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);return result}});
 </script></body></html>
