@@ -1,0 +1,804 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARK 5S Management System</title>
+<!-- html2pdf.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- QRCode.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- JsBarcode CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb;margin-bottom:12px}
+#control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+#control .card h3{margin-top:0;color:#123b5d}
+#control input{padding:8px;margin:4px 4px 4px 0}
+.control-list{margin-top:10px;max-height:220px;overflow:auto}
+.control-row{display:flex;justify-content:space-between;align-items:center;padding:6px;border-bottom:1px solid #eee}
+.redbtn{background:#b91c1c}
+.tagbadge{padding:4px 8px;border-radius:12px;font-size:12px;font-weight:bold}
+.tagopen{background:#fee2e2;color:#991b1b}
+.tagresolved{background:#dcfce7;color:#166534}
+
+/* Red Tag Preview Styles */
+.portal-tag-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; background: #eef2f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #b71c1c; }
+.portal-tag { width: 300px; background: #d32f2f; padding: 12px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); box-sizing: border-box; }
+.portal-hole { width: 24px; height: 24px; background: #fff; border: 4px solid #b71c1c; border-radius: 50%; margin: 4px auto 12px; }
+.portal-tag-title { background: #fff; color: #d32f2f; text-align: center; font-size: 20px; font-weight: 900; padding: 6px 0; border-radius: 3px; letter-spacing: 1px; margin-bottom: 10px; }
+.portal-tag-body { background: #fff; padding: 12px; border-radius: 3px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #b71c1c; font-weight: bold; }
+.portal-field { margin-bottom: 8px; }
+.portal-field-label { margin-bottom: 2px; text-transform: uppercase; }
+.portal-line { border-bottom: 1.5px solid #d32f2f; min-height: 16px; color: #222; font-weight: normal; font-size: 12px; padding: 1px 2px; }
+.portal-checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.portal-checkbox-item { display: flex; align-items: center; gap: 4px; }
+.portal-box { width: 10px; height: 10px; border: 1.5px solid #d32f2f; border-radius: 50%; display: inline-block; text-align: center; line-height: 8px; font-size: 10px; }
+.portal-box.checked { background: #d32f2f; color: #fff; }
+.portal-tag-no-box { border: 1.5px solid #d32f2f; border-radius: 10px; padding: 2px 8px; display: inline-block; color: #222; margin-left: 4px; }
+
+/* UNIFIED LABEL STYLES */
+.lbl-sheet { display: flex; flex-wrap: wrap; gap: 15px; padding: 15px; background: #eef2f5; border-radius: 8px; justify-content: center; }
+.lbl-card { background: #fff; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; position: relative; overflow: hidden; color: #111; font-family: Arial, sans-serif; padding: 12px; width: 340px; }
+.lbl-header { display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #0056b3; padding-bottom: 6px; margin-bottom: 10px; font-weight: bold; font-size: 14px; color: #0056b3; }
+.lbl-body { display: flex; justify-content: space-between; align-items: center; }
+.lbl-details { font-size: 12px; line-height: 1.7; color: #000; }
+.lbl-details b { color: #000; font-weight: bold; }
+.lbl-details span { color: #0056b3; font-weight: bold; }
+.lbl-qr-box { text-align: center; }
+.lbl-qr-box .qr-sub { font-size: 8px; color: #555; margin-top: 4px; font-weight: bold; }
+</style>
+</head><body>
+<header><h1 id="sysHeaderTitle">PARK 5S System</h1><div id="sysHeaderSub">5S • Rooms • Assets • Maintenance • Location Control</div></header>
+<nav id="nav"></nav><main>
+<section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
+
+<section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th>Actions</th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
+
+<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
+<section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
+<section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
+<section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
+<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
+
+<section id="redtag" class="page"><h2>🔴 Red Tag System</h2>
+<div class="notice">Used during 5S Sort activities to flag items that are unnecessary, misplaced, damaged, or of unclear ownership. Tagged items move to a holding area until a disposition decision is made.</div>
+<div class="panel">
+  <h3>Red Tag Template Preview</h3>
+  <div id="redtagTemplatePreview"></div>
+</div>
+<button onclick="redTagForm()" class="redbtn">+ New Red Tag</button> <button onclick="printRedTagList()">Print Red Tag List</button>
+<div class="panel"><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Linked Asset</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="redtagT"></tbody></table></div>
+</section>
+
+<section id="labels" class="page"><h2>🏷️ Label Printing Center</h2>
+<div class="notice">Select items or rooms below to print standardized barcodes/QR labels.</div>
+<div class="panel">
+  <h3>Select Source to Print</h3>
+  <div style="display:flex; gap:15px; margin-bottom:12px;">
+     <label style="font-weight:bold"><input type="radio" name="lblSource" value="assets" checked onchange="renderLabelsTab()"> Registered Assets / Items</label>
+     <label style="font-weight:bold"><input type="radio" name="lblSource" value="rooms" onchange="renderLabelsTab()"> Rooms / Doors</label>
+  </div>
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+     <button onclick="selectAllLabels(true)">Select All</button>
+     <button onclick="selectAllLabels(false)">Deselect All</button>
+     <button onclick="printSelectedLabels()" style="background:#166534">🖨️ Print Selected Labels</button>
+  </div>
+  <table>
+     <thead><tr id="lblTabHead"></tr></thead>
+     <tbody id="lblTabBody"></tbody>
+  </table>
+</div>
+</section>
+
+<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="exportData()">Export JSON</button> <button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
+
+<section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change a user's role, or set their status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
+<section id="activity" class="page"><h2>Activity Log</h2><div class="notice">Shows the signed-in user responsible for protected actions.</div><div class="panel"><table><thead><tr><th>Date & time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody id="activityT"></tbody></table></div></section>
+
+<section id="control" class="page">
+<h2>⚙ Control Panel</h2>
+<div class="notice"><b>Administrator Development Area</b><br>Use this section for small system/configuration changes. Viewer accounts cannot access it.</div>
+<div class="grid">
+<div class="card">
+<h3>System Settings</h3>
+<label>System Name<input id="cpName"></label>
+<label>Subtitle<input id="cpSubtitle"></label>
+<label>Currency<input id="cpCurrency"></label><br>
+<button onclick="cpSaveSettings()">Save Settings</button>
+</div>
+<div class="card">
+<h3>Departments</h3>
+<input id="cpDept" placeholder="New department">
+<button onclick="cpAdd('departments','cpDept')">Add</button>
+<div id="cpDeptList" class="control-list"></div>
+</div>
+<div class="card">
+<h3>Asset Statuses</h3>
+<input id="cpStatus" placeholder="New status">
+<button onclick="cpAdd('statuses','cpStatus')">Add</button>
+<div id="cpStatusList" class="control-list"></div>
+</div>
+<div class="card">
+<h3>Equipment Conditions</h3>
+<input id="cpCondition" placeholder="New condition">
+<button onclick="cpAdd('conditions','cpCondition')">Add</button>
+<div id="cpConditionList" class="control-list"></div>
+</div>
+<div class="card">
+<h3>5S Audit Criteria</h3>
+<input id="cpCriterion" placeholder="New criterion">
+<button onclick="cpAdd('criteria','cpCriterion')">Add</button>
+<div id="cpCriterionList" class="control-list"></div>
+</div>
+<div class="card">
+<h3>Backup & Restore</h3>
+<button onclick="cpBackup()">Download Full Backup</button>
+<button onclick="document.getElementById('cpRestore').click()">Restore Backup</button>
+<input id="cpRestore" type="file" accept=".json" style="display:none" onchange="cpRestoreBackup(event)">
+<button onclick="cpResetConfig()" style="background:#b91c1c">Reset Configuration</button>
+<p style="font-size:12px;color:#666">Resetting configuration does not delete rooms/assets.</p>
+</div>
+</div>
+</section>
+</main>
+<div id="modal" class="modal"><div id="box" class="box"></div></div>
+
+<script>
+const BASE_SYSTEM_URL = "https://mendispark-pixel.github.io/Parkmendis/";
+const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
+
+let db = null;
+try {
+  db = JSON.parse(localStorage.getItem("park5s"));
+} catch(e) {}
+
+if (!db || !Array.isArray(db.rooms) || !Array.isArray(db.assets)) {
+  db = {
+    rooms: [
+      {id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
+      {id:2,building:"PH",floor:"2nd Floor",dept:"Ward",room:"243",person:"Ward In-Charge",status:"Active"}
+    ],
+    assets: [
+      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
+      {id:"EQ-001",name:"Ultrasound Machine",type:"Machine",dept:"Radiology (OPD)",room:"243",condition:"Good",purchase:"2025-01-10",value:1200000,status:"Active",last:"2026-06-01",next:"2026-12-01",history:[]},
+      {id:"IT-0456",name:"Ball Pen",type:"Small Item",dept:"Reception",room:"Reception Area",condition:"Good",purchase:"2026-01-01",value:50,status:"Active",last:"",next:"",history:[]},
+      {id:"WAR-243-FUR-001",name:"Bedside Locker",type:"Furniture",dept:"Ward",room:"243",condition:"Good",purchase:"2025-05-15",value:450000,status:"Active",last:"2026-07-10",next:"2027-01-10",history:[]}
+    ],
+    audits: [],
+    actions: [],
+    maintenance: [],
+    redtags: [],
+    users: [],
+    activity: []
+  };
+}
+
+function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
+function close(){document.getElementById("modal").style.display="none"}
+function openModal(x){document.getElementById("box").innerHTML=x;document.getElementById("modal").style.display="flex"}
+
+function go(id){
+  let signedIn=typeof sessionUser==="function"&&sessionUser(),admin=typeof isAdmin==="function"&&isAdmin();
+  if(signedIn&&!admin&&typeof canAccess==="function"&&!canAccess(id)){alert("Your administrator has not given your account access to this option.");return}
+  if(["control","users","activity"].includes(id)&&!admin){alert("Administrator access required.");if(typeof showLogin==="function")showLogin();return}
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  render();
+}
+
+function roomForm(r){
+  openModal(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid>
+  <label>Building<input id=rb value="${r?.building||""}"></label><label>Floor<input id=rf value="${r?.floor||""}"></label>
+  <label>Department<select id=rd>${DEPTS.map(d=>`<option ${d==(r?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+  <label>Room / Area<input id=rr value="${r?.room||""}"></label><label>Responsible Person<input id=rp value="${r?.person||""}"></label></div>
+  <br><button onclick="saveRoom(${r?.id||0})">Save</button> <button onclick=close()>Cancel</button>`);
+}
+function saveRoom(id){
+  let o={id:id||Date.now(),building:rb.value,floor:rf.value,dept:rd.value,room:rr.value,person:rp.value,status:"Active"};
+  let i=db.rooms.findIndex(x=>x.id==id);
+  i>=0?db.rooms[i]=o:db.rooms.push(o);
+  close();save();
+}
+
+function assetForm(a){
+  openModal(`<h2>${a?"Edit":"Add"} Machine, Equipment or Small Item</h2><div class=grid>
+  <label>Identification Code<input id=ai value="${a?.id||""}" placeholder="Generated from room and type"></label>
+  <label>Item Type<select id=at>${["Machine","Equipment","Small Item","Tool","Furniture","Other"].map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Item / Equipment<input id=an value="${a?.name||""}"></label>
+  <label>Department<select id=ad>${DEPTS.map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+  <label>Room<select id=ar>${db.rooms.map(r=>`<option ${r.room==(a?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
+  <label>Condition<select id=ac>${["Excellent","Good","Fair","Needs Repair","Beyond Repair"].map(s=>`<option ${s==(a?.condition||"Good")?"selected":""}>${s}</option>`).join("")}</select></label>
+  <label>Purchase Date<input id=ap type=date value="${a?.purchase||""}"></label>
+  <label>Value (Rs.)<input id=av type=number value="${a?.value||""}"></label>
+  <label>Status<select id=as>${["Active","In Use","In Storage","Under Maintenance","Missing","Red Tagged","Transferred","Replaced","Disposed"].map(s=>`<option ${s==(a?.status||"Active")?"selected":""}>${s}</option>`).join("")}</select></label>
+  <label>Last Maintenance<input id=al type=date value="${a?.last||""}"></label>
+  <label>Next Maintenance Due<input id=nx type=date value="${a?.next||""}"></label>
+  <label>Photo<input id=photo type=file accept=image/*></label></div><br>
+  <button onclick="fillSuggestedAssetCode()">Generate Identification Code</button> <button onclick="saveAsset('${a?.id||""}')">Save</button> <button onclick=close()>Cancel</button>`);
+}
+
+function codePart(value,length){return String(value||"").replace(/[^a-z0-9]/gi,"").toUpperCase().slice(0,length)||"GEN"}
+function suggestedAssetCode(){
+    let room=db.rooms.find(r=>r.room===ar.value);
+    let roomPart=codePart(room?.room||ar.value,4);
+    let deptPart=codePart(ad.value,3);
+    let typePart={"Machine":"MAC","Equipment":"EQP","Small Item":"SMI","Tool":"TOL","Furniture":"FUR","Other":"OTH"}[at.value]||"OTH";
+    let prefix=`${deptPart}-${roomPart}-${typePart}`;
+    let existingCount=db.assets.filter(a=>String(a.id).startsWith(prefix)).length;
+    let number=String(existingCount+1).padStart(3,"0");
+    return `${prefix}-${number}`;
+}
+function fillSuggestedAssetCode(){ai.value=suggestedAssetCode()}
+
+function saveAsset(old){
+    let photo0=db.assets.find(x=>x.id==old)?.photo||"";
+    let f=photo.files[0];
+    let done=p=>{
+        let id=ai.value.trim()||suggestedAssetCode();
+        let duplicate=db.assets.find(x=>x.id===id&&x.id!==old);
+        if(duplicate){
+            alert("This exact identification code already exists. Please generate a new code.");
+            return;
+        }
+        let o={id,name:an.value,type:at.value,dept:ad.value,room:ar.value,condition:ac.value,purchase:ap.value,value:+av.value||0,status:as.value,last:al.value,next:nx.value,photo:p,history:db.assets.find(x=>x.id==old)?.history||[]};
+        let i=db.assets.findIndex(x=>x.id==old);
+        i>=0?db.assets[i]=o:db.assets.push(o);
+        close();
+        save();
+    };
+    if(f){
+        let r=new FileReader();
+        r.onload=()=>done(r.result);
+        r.readAsDataURL(f);
+    }else done(photo0);
+}
+
+function move(id){let a=db.assets.find(x=>x.id==id);openModal(`<h2>Transfer Item</h2><p><b>${a.name}</b> (${a.id})</p><label>New Room<select id=nr>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Reason<textarea id=reason></textarea></label><button onclick="doMove('${id}')">Record Transfer</button> <button onclick=close()>Cancel</button>`)}
+function doMove(id){let a=db.assets.find(x=>x.id==id),from=a.room;a.room=nr.value;a.status="Active";a.history.push({date:new Date().toISOString().slice(0,10),event:"Moved",from:from,to:a.room,reason:reason.value});close();save()}
+function missing(id){let a=db.assets.find(x=>x.id==id);a.status="Missing";db.actions.push({date:new Date().toISOString().slice(0,10),type:"Missing Item",item:a.name,location:a.room,finding:"Expected item not found during physical verification.",status:"Open"});save()}
+
+/* RED TAG SYSTEM */
+const RED_TAG_REASONS=["Not Needed","Wrong Location","Unknown Owner","Damaged / Beyond Repair","Excess Quantity","Expired","Other"];
+const RED_TAG_DISPOSITIONS=["Returned to Service","Relocated","Transferred to Another Dept","Repaired","Sold","Donated","Disposed / Scrapped"];
+function nextTagNumber(){let n=(db.redtags?.length||0)+1;return "RT-"+new Date().getFullYear()+"-"+String(n).padStart(4,"0")}
+function redTagForm(asset){
+ openModal(`<h2>🔴 New Red Tag</h2><div class=grid>
+ <label>Linked Asset (optional)<select id=rtAsset onchange="rtAssetPick()"><option value="">— Not a registered asset —</option>${db.assets.map(a=>`<option value="${a.id}" ${asset&&asset.id===a.id?"selected":""}>${a.id} — ${a.name}</option>`).join("")}</select></label>
+ <label>Item Description<input id=rtItem value="${asset?safe(asset.name):""}" placeholder="Item name if not a registered asset"></label>
+ <label>Department<select id=rtDept>${DEPTS.map(d=>`<option ${d==(asset?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+ <label>Room / Location<select id=rtRoom>${db.rooms.map(r=>`<option ${r.room==(asset?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
+ <label>Reason<select id=rtReason>${RED_TAG_REASONS.map(r=>`<option>${r}</option>`).join("")}</select></label>
+ <label>Tagged By<input id=rtBy value="${safe(sessionUser()?.name||"")}"></label>
+ <label>Date<input id=rtDate type=date value="${new Date().toISOString().slice(0,10)}"></label>
+ </div>
+ <label>Notes<textarea id=rtNote placeholder="Additional details..."></textarea></label>
+ <button onclick="saveRedTag()">Save Red Tag</button> <button onclick=close()>Cancel</button>`);
+}
+function rtAssetPick(){
+ let a=db.assets.find(x=>x.id===rtAsset.value);
+ if(a){rtItem.value=a.name;rtDept.value=a.dept;rtRoom.value=a.room}
+}
+function saveRedTag(){
+ let assetId=rtAsset.value,linkedAsset=assetId?db.assets.find(a=>a.id===assetId):null;
+ let item=(linkedAsset?linkedAsset.name:rtItem.value.trim());
+ if(!item){alert("Enter an item description or select a registered asset.");return}
+ let tag={id:nextTagNumber(),date:rtDate.value,assetId:assetId||"",item,dept:rtDept.value,room:rtRoom.value,reason:rtReason.value,taggedBy:rtBy.value.trim(),note:rtNote.value.trim(),status:"In Holding Area",disposition:"",dispositionNote:"",dispositionDate:""};
+ db.redtags=db.redtags||[];
+ db.redtags.push(tag);
+ if(linkedAsset)linkedAsset.status="Red Tagged";
+ db.actions.push({date:tag.date,type:"Red Tag",item:tag.item,location:tag.room,finding:"Red tagged — "+tag.reason+(tag.note?": "+tag.note:""),status:"Open"});
+ close();
+ save();
+}
+
+function resolveRedTagForm(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ openModal(`<h2>Resolve Red Tag ${safe(t.id)}</h2><p><b>${safe(t.item)}</b> — ${safe(t.room)} (${safe(t.dept)})</p>
+ <div class=grid>
+ <label>Disposition<select id=rdDisp>${RED_TAG_DISPOSITIONS.map(d=>`<option ${d===t.disposition?"selected":""}>${d}</option>`).join("")}</select></label>
+ <label>Date<input id=rdDate type=date value="${new Date().toISOString().slice(0,10)}"></label>
+ </div>
+ <label>Notes<textarea id=rdNote>${safe(t.dispositionNote||"")}</textarea></label>
+ <button onclick="resolveRedTag('${t.id}')">Save Disposition</button> <button onclick=close()>Cancel</button>`);
+}
+function resolveRedTag(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
+ t.disposition=rdDisp.value;t.dispositionNote=rdNote.value.trim();t.dispositionDate=rdDate.value;t.status="Resolved";
+ if(t.assetId){
+  let a=db.assets.find(x=>x.id===t.assetId);
+  if(a){const map={"Returned to Service":"Active","Relocated":"Active","Transferred to Another Dept":"Transferred","Repaired":"Active","Sold":"Disposed","Donated":"Disposed","Disposed / Scrapped":"Disposed"};a.status=map[t.disposition]||"Active"}
+ }
+ close();
+ save();
+}
+
+/* UNIFIED LABEL GENERATION LOGIC */
+function generateLabelHTML(item, isRoom = false) {
+   let idVal = isRoom ? `ROOM-${item.room}` : item.id;
+   let deptVal = item.dept || "—";
+   let itemNameVal = isRoom ? (item.room || "—") : (item.name || "—");
+   let roomVal = isRoom ? item.room : (item.room || "—");
+
+   return `
+   <div class="lbl-card">
+      <div class="lbl-header">
+         PARK 5S SYSTEM
+      </div>
+      <div class="lbl-body">
+         <div class="lbl-details">
+            <div><b>Department :</b> <span>${safe(deptVal)}</span></div>
+            <div><b>item Name :</b> <span>${safe(itemNameVal)}</span></div>
+            <div><b>Asset ID :</b> <span>${safe(idVal)}</span></div>
+            <div><b>Room No :</b> <span>${safe(roomVal)}</span></div>
+         </div>
+         <div class="lbl-qr-box">
+            <div id="qr_${idVal.replace(/[^a-zA-Z0-9]/g,'_')}" class="qr-code-target"></div>
+            <div class="qr-sub">Scan for System</div>
+         </div>
+      </div>
+   </div>`;
+}
+
+function attachCodesToLabels(container) {
+   container.querySelectorAll('.qr-code-target').forEach(el => {
+      let idStr = el.id.replace('qr_', '');
+      let targetId = idStr.startsWith('ROOM_') ? idStr.replace('ROOM_', '') : idStr;
+      
+      new QRCode(el, {
+         text: `${BASE_SYSTEM_URL}?id=${encodeURIComponent(targetId)}`,
+         width: 62,
+         height: 62
+      });
+   });
+}
+
+function printRoomLabel(roomId) {
+   let r = db.rooms.find(x => x.id == roomId);
+   if (!r) return;
+   let html = generateLabelHTML(r, true);
+   let w = window.open("", "_blank");
+   w.document.write(`<html><head><title>Room Label - ${safe(r.room)}</title>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+   <style>
+   body{font-family:Arial;padding:20px;display:flex;justify-content:center;align-items:center;height:90vh}
+   ${document.querySelector('style').innerHTML}
+   </style></head><body>${html}
+   <script>
+   const BASE_SYSTEM_URL = "${BASE_SYSTEM_URL}";
+   (${attachCodesToLabels.toString()})(document);
+   setTimeout(() => { window.print(); }, 400);
+   <\/script>
+   </body></html>`);
+   w.document.close();
+}
+
+function renderLabelsTab() {
+   let source = document.querySelector('input[name="lblSource"]:checked')?.value || "assets";
+   let head = document.getElementById("lblTabHead");
+   let body = document.getElementById("lblTabBody");
+   if (!head || !body) return;
+
+   if (source === "assets") {
+      head.innerHTML = `<th><input type="checkbox" onchange="selectAllLabels(this.checked)"></th><th>ID</th><th>Type</th><th>Item Name</th><th>Department</th><th>Room</th>`;
+      body.innerHTML = db.assets.map(a => `<tr>
+         <td><input type="checkbox" class="lbl-select-item" value="${safe(a.id)}"></td>
+         <td>${safe(a.id)}</td>
+         <td>${safe(a.type || "Equipment")}</td>
+         <td>${safe(a.name)}</td>
+         <td>${safe(a.dept)}</td>
+         <td>${safe(a.room)}</td>
+      </tr>`).join("");
+   } else {
+      head.innerHTML = `<th><input type="checkbox" onchange="selectAllLabels(this.checked)"></th><th>Building</th><th>Floor</th><th>Department</th><th>Room No / Name</th>`;
+      body.innerHTML = db.rooms.map(r => `<tr>
+         <td><input type="checkbox" class="lbl-select-room" value="${r.id}"></td>
+         <td>${safe(r.building)}</td>
+         <td>${safe(r.floor)}</td>
+         <td>${safe(r.dept)}</td>
+         <td>${safe(r.room)}</td>
+      </tr>`).join("");
+   }
+}
+
+function selectAllLabels(checked) {
+   document.querySelectorAll('.lbl-select-item, .lbl-select-room').forEach(cb => cb.checked = checked);
+}
+
+function printSelectedLabels() {
+   let source = document.querySelector('input[name="lblSource"]:checked')?.value || "assets";
+   let selectedHTML = "";
+
+   if (source === "assets") {
+      let selectedIds = [...document.querySelectorAll('.lbl-select-item:checked')].map(cb => cb.value);
+      if (!selectedIds.length) { alert("Please select at least one item to print."); return; }
+      let items = db.assets.filter(a => selectedIds.includes(a.id));
+      selectedHTML = items.map(a => generateLabelHTML(a, false)).join("");
+   } else {
+      let selectedIds = [...document.querySelectorAll('.lbl-select-room:checked')].map(cb => cb.value);
+      if (!selectedIds.length) { alert("Please select at least one room to print."); return; }
+      let rooms = db.rooms.filter(r => selectedIds.includes(String(r.id)));
+      selectedHTML = rooms.map(r => generateLabelHTML(r, true)).join("");
+   }
+
+   let w = window.open("", "_blank");
+   w.document.write(`<html><head><title>Batch Label Print</title>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+   <style>
+   body { font-family: Arial, sans-serif; padding: 20px; background: #fff; }
+   ${document.querySelector('style').innerHTML}
+   </style></head><body>
+   <div class="lbl-sheet">${selectedHTML}</div>
+   <script>
+   const BASE_SYSTEM_URL = "${BASE_SYSTEM_URL}";
+   (${attachCodesToLabels.toString()})(document);
+   setTimeout(() => { window.print(); }, 500);
+   <\/script>
+   </body></html>`);
+   w.document.close();
+}
+
+/* RED TAG SYSTEM FIXES & HTML2PDF */
+function downloadRedTagPDF(id) {
+    let t = db.redtags.find(x => x.id === id); 
+    if (!t) { alert("Red Tag record not found!"); return; }
+
+    let wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '0';
+
+    wrapper.innerHTML = `
+      <div id="pdfTarget" style="display: flex; gap: 20px; font-family: Arial, sans-serif; background: #ffffff; padding: 20px;">
+        <div style="width: 300px; background: #d32f2f; padding: 12px; border-radius: 6px; box-sizing: border-box;">
+            <div style="width: 24px; height: 24px; background: #fff; border: 4px solid #b71c1c; border-radius: 50%; margin: 4px auto 12px;"></div>
+            <div style="background: #fff; color: #d32f2f; text-align: center; font-size: 20px; font-weight: 900; padding: 6px 0; border-radius: 3px; letter-spacing: 1px; margin-bottom: 10px;">5S RED TAG</div>
+            <div style="background: #fff; padding: 12px; border-radius: 3px; height: 360px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #b71c1c; font-weight: bold;">
+                <div>
+                    <div style="margin-bottom: 8px;">
+                        <div style="margin-bottom: 2px;">ITEM / DESCRIPTION:</div>
+                        <div style="border-bottom: 1.5px solid #d32f2f; color: #222; font-weight: normal; font-size: 12px; padding: 1px 2px;">${safe(t.item)} (${safe(t.assetId || "Unregistered")})</div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 11px; line-height: 1.8;">
+                        <div>${t.reason === 'Not Needed' ? '<b>[ X ]</b>' : '[ &nbsp; ]'} NOT REQUIRED</div>
+                        <div>${t.reason === 'Damaged / Beyond Repair' ? '<b>[ X ]</b>' : '[ &nbsp; ]'} TO BE REPAIRED</div>
+                        <div>${t.reason === 'Wrong Location' ? '<b>[ X ]</b>' : '[ &nbsp; ]'} PLACE IN STORAGE</div>
+                        <div>${t.reason === 'Excess Quantity' ? '<b>[ X ]</b>' : '[ &nbsp; ]'} SCRAP</div>
+                        <div>${t.reason === 'Other' ? '<b>[ X ]</b>' : '[ &nbsp; ]'} OTHER</div>
+                    </div>
+                </div>
+                <div style="font-size: 9px; text-align: center; color: #777;">PARK 5S Management System</div>
+            </div>
+        </div>
+
+        <div style="width: 300px; background: #d32f2f; padding: 12px; border-radius: 6px; box-sizing: border-box;">
+            <div style="width: 24px; height: 24px; background: #fff; border: 4px solid #b71c1c; border-radius: 50%; margin: 4px auto 12px;"></div>
+            <div style="background: #fff; color: #d32f2f; text-align: center; font-size: 20px; font-weight: 900; padding: 6px 0; border-radius: 3px; letter-spacing: 1px; margin-bottom: 10px;">5S RED TAG</div>
+            <div style="background: #fff; padding: 12px; border-radius: 3px; height: 360px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #b71c1c; font-weight: bold;">
+                <div>
+                    <div style="margin-bottom: 8px;"><div>DATE:</div><div style="border-bottom: 1.5px solid #d32f2f; color: #222;">${safe(t.date)}</div></div>
+                    <div style="margin-bottom: 8px;"><div>RAISED BY:</div><div style="border-bottom: 1.5px solid #d32f2f; color: #222;">${safe(t.taggedBy || "—")}</div></div>
+                    <div style="margin-bottom: 8px;"><div>LOCATION:</div><div style="border-bottom: 1.5px solid #d32f2f; color: #222;">${safe(t.dept)} — ${safe(t.room)}</div></div>
+                    <div style="margin-bottom: 8px;"><div>NOTES:</div><div style="border-bottom: 1.5px solid #d32f2f; color: #222;">${safe(t.note || "—")}</div></div>
+                </div>
+                <div style="text-align: right; margin-top: 10px; color: #222; font-size:12px;">
+                    TAG NO. <b>${safe(t.id)}</b>
+                </div>
+            </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    let opt = {
+      margin:       10,
+      filename:     `RedTag_${t.id}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(wrapper.querySelector('#pdfTarget')).save().then(() => {
+        document.body.removeChild(wrapper);
+    });
+}
+
+function printRedTag(id) {
+    let t = db.redtags.find(x => x.id === id); if (!t) return;
+    let w = window.open("", "_blank");
+    if (!w) { alert("Please allow pop-ups for this site to print."); return; }
+
+    w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #fff; display: flex; justify-content: center; }
+        .tag-container { display: flex; gap: 20px; }
+        .tag { width: 300px; background: #d32f2f; padding: 12px; border-radius: 6px; box-sizing: border-box; }
+        .hole { width: 24px; height: 24px; background: #fff; border: 4px solid #b71c1c; border-radius: 50%; margin: 4px auto 12px; }
+        .tag-title { background: #fff; color: #d32f2f; text-align: center; font-size: 20px; font-weight: 900; padding: 6px 0; border-radius: 3px; margin-bottom: 10px; }
+        .tag-body { background: #fff; padding: 12px; border-radius: 3px; min-height: 350px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #b71c1c; font-weight: bold; }
+        .line { border-bottom: 1.5px solid #d32f2f; color: #222; font-weight: normal; font-size: 12px; padding: 1px 2px; margin-bottom: 8px; }
+    </style></head><body>
+    <div class="tag-container">
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div>ITEM / DESCRIPTION:</div>
+                    <div class="line">${safe(t.item)} (${safe(t.assetId || "Unregistered")})</div>
+                    <div style="margin-top:15px">REASON:</div>
+                    <div class="line">${safe(t.reason)}</div>
+                </div>
+                <div style="font-size: 9px; text-align: center; color: #777;">PARK 5S System</div>
+            </div>
+        </div>
+        <div class="tag">
+            <div class="hole"></div>
+            <div class="tag-title">5S RED TAG</div>
+            <div class="tag-body">
+                <div>
+                    <div>DATE:</div><div class="line">${safe(t.date)}</div>
+                    <div>RAISED BY:</div><div class="line">${safe(t.taggedBy || "—")}</div>
+                    <div>LOCATION:</div><div class="line">${safe(t.dept)} — ${safe(t.room)}</div>
+                    <div>NOTES:</div><div class="line">${safe(t.note || "—")}</div>
+                </div>
+                <div style="text-align: right; color:#222;">TAG NO. <b>${safe(t.id)}</b></div>
+            </div>
+        </div>
+    </div>
+    </body></html>`);
+
+    w.document.close();
+    w.print();
+}
+
+function printRedTagList(){
+ let w=window.open("","_blank");
+ if(!w){alert("Please allow pop-ups for this site to print.");return}
+ let rows=(db.redtags||[]).map(t=>`<tr><td>${safe(t.id)}</td><td>${safe(t.date)}</td><td>${safe(t.item)}</td><td>${safe(t.assetId||"—")}</td><td>${safe(t.dept)}</td><td>${safe(t.room)}</td><td>${safe(t.reason)}</td><td>${safe(t.taggedBy||"—")}</td><td>${safe(t.status)}</td></tr>`).join("")||"<tr><td colspan=9>No red tags recorded.</td></tr>";
+ w.document.write(`<html><head><title>Red Tag List</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;font-size:12px}th{background:#eee}</style></head><body><h1>PARK 5S — Red Tag List</h1><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Asset ID</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+ w.document.close();
+ w.print();
+}
+
+function renderRedTagPreview(){
+    let previewContainer = document.getElementById("redtagTemplatePreview");
+    if(!previewContainer) return;
+    
+    let lastTag = (db.redtags && db.redtags.length > 0) ? db.redtags[db.redtags.length - 1] : {
+        id: "RT-2026-0001",
+        date: new Date().toISOString().slice(0,10),
+        item: "Sample Equipment Item",
+        assetId: "SAMPLE-001",
+        dept: "OPD",
+        room: "Consultation Room 01",
+        reason: "Not Needed",
+        taggedBy: "System Auditor",
+        note: "Sample Red Tag Note"
+    };
+
+    previewContainer.innerHTML = `
+    <div class="portal-tag-container">
+        <div class="portal-tag">
+            <div class="portal-hole"></div>
+            <div class="portal-tag-title">5S RED TAG</div>
+            <div class="portal-tag-body">
+                <div>
+                    <div class="portal-field">
+                        <div class="portal-field-label">Item / Description:</div>
+                        <div class="portal-line">${safe(lastTag.item)} (${safe(lastTag.assetId || "Unregistered")})</div>
+                    </div>
+                    <div class="portal-checkbox-grid">
+                        <div class="portal-checkbox-item"><span class="portal-box ${lastTag.reason === 'Not Needed' ? 'checked' : ''}"></span> NOT REQUIRED</div>
+                        <div class="portal-checkbox-item"><span class="portal-box ${lastTag.reason === 'Damaged / Beyond Repair' ? 'checked' : ''}"></span> TO BE REPAIRED</div>
+                        <div class="portal-checkbox-item"><span class="portal-box ${lastTag.reason === 'Wrong Location' ? 'checked' : ''}"></span> PLACE IN STORAGE</div>
+                        <div class="portal-checkbox-item"><span class="portal-box ${lastTag.reason === 'Excess Quantity' ? 'checked' : ''}"></span> SCRAP</div>
+                        <div class="portal-checkbox-item"><span class="portal-box ${lastTag.reason === 'Other' ? 'checked' : ''}"></span> OTHER</div>
+                    </div>
+                </div>
+                <div style="font-size: 9px; text-align: center; color: #777;">PARK 5S Management System</div>
+            </div>
+        </div>
+
+        <div class="portal-tag">
+            <div class="portal-hole"></div>
+            <div class="portal-tag-title">5S RED TAG</div>
+            <div class="portal-tag-body">
+                <div>
+                    <div class="portal-field"><div class="portal-field-label">DATE</div><div class="portal-line">${safe(lastTag.date)}</div></div>
+                    <div class="portal-field"><div class="portal-field-label">RAISED BY:</div><div class="portal-line">${safe(lastTag.taggedBy || "—")}</div></div>
+                    <div class="portal-field"><div class="portal-field-label">SECTION / DEPT:</div><div class="portal-line">${safe(lastTag.dept)} — ${safe(lastTag.room)}</div></div>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">TAG NO. <span class="portal-tag-no-box">${safe(lastTag.id)}</span></div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function maintForm(){openModal(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
+function saveMaint(){let a=db.assets.find(x=>x.id==mi.value);a.last=md.value;a.next=mn.value;a.status="Active";db.maintenance.push({asset:a.name,id:a.id,last:md.value,next:mn.value,provider:mp.value,cost:+mv.value||0});close();save()}
+
+function auditForm(){openModal(`<h2>5S Audit</h2><div class=grid><label>Department<select id=xdept>${DEPTS.map(d=>`<option>${d}</option>`).join("")}</select></label><label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Auditor<input id=xaud></label><label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>${["Sort","Set in Order","Shine","Standardize","Sustain"].map(s=>`<label>${s}<select id=x${s.replaceAll(" ","")}><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>`).join("")}</div><label>Finding<textarea id=xf></textarea></label><label>Corrective Action<textarea id=xa></textarea></label><button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`)}
+function saveAudit(){let vals=["Sort","SetInOrder","Shine","Standardize","Sustain"].map(s=>+document.getElementById("x"+s).value);db.audits.push({date:xdate.value,dept:xdept.value,room:xroom.value,auditor:xaud.value,vals});if(xa.value)db.actions.push({date:xdate.value,type:"5S Corrective Action",item:"Room Audit",location:xroom.value,finding:xf.value,status:"Open"});close();save()}
+
+function render(){
+  let today=new Date().toISOString().slice(0,10);
+  let missingCount=db.assets.filter(a=>a.status=="Missing").length;
+  let repairCount=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length;
+  let dueCount=db.assets.filter(a=>a.next&&a.next<=today).length;
+  let openTagsCount=(db.redtags||[]).filter(t=>t.status!=="Resolved").length;
+
+  document.getElementById("cards").innerHTML=[
+    ["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],
+    ["Rooms",db.rooms.length],
+    ["Registered Assets",db.assets.length],
+    ["Missing",missingCount],
+    ["Needs Repair",repairCount],
+    ["Maintenance Due",dueCount],
+    ["Red Tags (Open)",openTagsCount]
+  ].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+
+  document.getElementById("roomsT").innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button> <button onclick="printRoomLabel('${r.id}')">Print Label</button></td></tr>`).join("");
+  document.getElementById("assetsT").innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button> <button onclick='redTagForm(${JSON.stringify(a)})' class="redbtn">Red Tag</button></td></tr>`).join("");
+  document.getElementById("locT").innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
+  document.getElementById("mcards").innerHTML=[["Due Today/Overdue",dueCount],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repairCount]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+  document.getElementById("maintT").innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
+  document.getElementById("auditT").innerHTML=db.audits.map(a=>`<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v=>`<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x,y)=>x+y,0)/20*100)}%</td></tr>`).join("");
+  document.getElementById("actionsT").innerHTML=db.actions.map(a=>`<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
+
+  let rt=document.getElementById("redtagT");
+  if(rt)rt.innerHTML=(db.redtags||[]).map(t=>`<tr><td>${t.id}</td><td>${t.date}</td><td>${t.item}</td><td>${t.assetId||"—"}</td><td>${t.dept}</td><td>${t.room}</td><td>${t.reason}</td><td>${t.taggedBy||"—"}</td><td><span class="tagbadge ${t.status==="Resolved"?"tagresolved":"tagopen"}">${t.status}</span></td><td><button onclick="printRedTag('${t.id}')">Print</button> <button onclick="downloadRedTagPDF('${t.id}')">PDF</button>${t.status!=="Resolved"?` <button onclick="resolveRedTagForm('${t.id}')">Resolve</button>`:""}</td></tr>`).join("")||"<tr><td colspan=10>No red tags recorded.</td></tr>";
+
+  document.getElementById("dept").innerHTML=DEPTS.map(d=>{
+    let r=db.rooms.filter(x=>x.dept==d),a=db.assets.filter(x=>x.dept==d),au=db.audits.filter(x=>x.dept==d);
+    let sc=au.length?Math.round(au.reduce((t,x)=>t+x.vals.reduce((p,q)=>p+q,0)/20*100,0)/au.length):0;
+    return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x=>x.status=="Missing").length}</td><td>${a.filter(x=>x.condition&&x.condition.includes("Repair")).length}</td><td>${sc?sc+"%":"—"}</td></tr>`;
+  }).join("");
+
+  document.getElementById("summary").textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing:missingCount,needsRepair:repairCount,maintenanceDue:dueCount},null,2);
+  renderRedTagPreview();
+  renderLabelsTab();
+}
+
+function exportData(){
+  let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download="PARK_5S_Data.json";a.click();URL.revokeObjectURL(u);
+}
+
+const CP_DEFAULTS={
+  name:"PARK 5S Management System",
+  subtitle:"5S • Rooms • Assets • Maintenance • Location Control",
+  currency:"LKR",
+  departments:["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"],
+  statuses:["Active","In Use","In Storage","Under Maintenance","Needs Repair","Missing","Transferred","Replaced","Disposed","Lost","Awaiting Disposal","Not in Use"],
+  conditions:["Excellent","Good","Fair","Needs Repair","Damaged","Not Working"],
+  criteria:["Sort – unnecessary items removed","Set in Order – items have designated locations","Shine – room/equipment is clean","Standardize – labels/checklists are maintained","Sustain – standards are consistently followed"]
+};
+
+function cpConfig(){
+ try{return Object.assign({},CP_DEFAULTS,JSON.parse(localStorage.getItem("park5sConfig")||"{}"))}
+ catch(e){return Object.assign({},CP_DEFAULTS)}
+}
+function cpAdmin(){return typeof isAdmin==="function" && isAdmin()}
+function cpEscape(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
+function cpSaveSettings(){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let c=cpConfig();
+ c.name=document.getElementById("cpName").value.trim()||CP_DEFAULTS.name;
+ c.subtitle=document.getElementById("cpSubtitle").value.trim()||CP_DEFAULTS.subtitle;
+ c.currency=document.getElementById("cpCurrency").value.trim()||"LKR";
+ localStorage.setItem("park5sConfig",JSON.stringify(c));
+ document.title=c.name;
+ document.getElementById("sysHeaderTitle").textContent=c.name;
+ document.getElementById("sysHeaderSub").textContent=c.subtitle;
+ alert("Settings saved.");
+}
+function cpAdd(type,id){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let el=document.getElementById(id),v=el.value.trim();if(!v)return;
+ let c=cpConfig();if(!c[type].includes(v))c[type].push(v);
+ localStorage.setItem("park5sConfig",JSON.stringify(c));el.value="";cpRender();
+}
+function cpRemove(type,i){
+ if(!cpAdmin())return;
+ let c=cpConfig();c[type].splice(i,1);
+ localStorage.setItem("park5sConfig",JSON.stringify(c));cpRender();
+}
+function cpList(type,id){
+ let c=cpConfig(),el=document.getElementById(id);if(!el)return;
+ el.innerHTML=c[type].map((x,i)=>'<div class="control-row"><span>'+cpEscape(x)+'</span><button onclick="cpRemove(\''+type+'\','+i+')">Remove</button></div>').join("");
+}
+function cpRender(){
+ let c=cpConfig(),n=document.getElementById("cpName");if(!n)return;
+ n.value=c.name;document.getElementById("cpSubtitle").value=c.subtitle;document.getElementById("cpCurrency").value=c.currency;
+ document.getElementById("sysHeaderTitle").textContent=c.name;
+ document.getElementById("sysHeaderSub").textContent=c.subtitle;
+ cpList("departments","cpDeptList");cpList("statuses","cpStatusList");cpList("conditions","cpConditionList");cpList("criteria","cpCriterionList");
+}
+function cpBackup(){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let payload={version:4,exportedAt:new Date().toISOString(),config:cpConfig(),database:db};
+ let blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="PARK_5S_Full_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();
+}
+function cpRestoreBackup(event){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let f=event.target.files[0];if(!f)return;
+ let r=new FileReader();
+ r.onload=function(){
+  try{
+   let x=JSON.parse(r.result);
+   if(!x.database)throw new Error("Invalid backup file");
+   localStorage.setItem("park5sConfig",JSON.stringify(x.config||CP_DEFAULTS));
+   localStorage.setItem("park5s",JSON.stringify(x.database));
+   alert("Backup restored. The system will reload.");
+   location.reload();
+  }catch(e){alert("Restore failed: "+e.message)}
+ };
+ r.readAsText(f);
+}
+function cpResetConfig(){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ if(confirm("Reset Control Panel settings to defaults? Rooms and assets will remain.")){
+  localStorage.setItem("park5sConfig",JSON.stringify(CP_DEFAULTS));cpRender();alert("Configuration reset.");
+ }
+}
+
+const USER_DEFAULTS=[
+ {id:"admin",username:"admin",name:"System Administrator",password:"admin123",role:"Admin",status:"Active",lastLogin:"",permissions:[]},
+ {id:"viewer",username:"viewer",name:"Read-only Viewer",password:"viewer123",role:"Viewer",status:"Active",lastLogin:"",permissions:["reports"]}
+];
+const PERMISSION_LINKS=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["labels","Labels Center"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"]];
+
+function securitySetup(){
+ db.users=Array.isArray(db.users)&&db.users.length?db.users:USER_DEFAULTS.map(x=>Object.assign({},x));
+ db.users.forEach(u=>{if(!Array.isArray(u.permissions))u.permissions=u.role==="Admin"?[]:["reports"]});
+ db.activity=Array.isArray(db.activity)?db.activity:[];
+ db.redtags=Array.isArray(db.redtags)?db.redtags:[];
+ localStorage.setItem("park5s",JSON.stringify(db));
+}
+function sessionUser(){return db.users.find(u=>u.username===sessionStorage.getItem("park5sUser")&&u.status==="Active")||null}
+function isAdmin(){let u=sessionUser();return !!u&&u.role==="Admin"}
+function canAccess(id){let u=sessionUser();return !!u&&(u.role==="Admin"||u.permissions.includes(id))}
+function requireAdmin(){if(isAdmin())return true;alert("Administrator login is required.");showLogin();return false}
+function safe(v){return String(v==null?"":v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
+function logActivity(action,details){let u=sessionUser();if(!u)return;db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});localStorage.setItem("park5s",JSON.stringify(db));}
+function showLogin(){openModal(`<h2>Sign in</h2><label>Username<input id=loginUser autocomplete=username></label><label>Password<input id=loginPass type=password autocomplete=current-password></label><br><button onclick=login()>Sign in</button>`)}
+function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.password===loginPass.value&&x.status==="Active");if(!u){alert("Invalid credentials.");return}sessionStorage.setItem("park5sUser",u.username);u.lastLogin=new Date().toLocaleString();logActivity("Signed in","Successful login");close();if(u.role!=="Admin"){go("reports");return}render();}
+function logout(){let u=sessionUser();if(u)logActivity("Signed out","");sessionStorage.removeItem("park5sUser");render();}
+function userForm(user){if(!requireAdmin())return;let allowed=user?.permissions||["reports"],checks=PERMISSION_LINKS.map(([id,label])=>`<label style="display:block;margin:6px 0"><input type=checkbox name=permission value="${id}" ${allowed.includes(id)?"checked":""} style="width:auto;margin-right:7px">${label}</label>`).join("");openModal(`<h2>${user?"Edit":"Add"} User</h2><div class=grid><label>Username<input id=uu value="${safe(user?.username||"")}" ${user?.username==="admin"?"readonly":""}></label><label>Full name<input id=un value="${safe(user?.name||"")}"></label><label>Password<input id=up type=password placeholder="${user?"Leave blank to keep current password":"Set password"}"></label><label>Role<select id=ur><option ${user?.role==="Admin"?"selected":""}>Admin</option><option ${user?.role==="Viewer"?"selected":""}>Viewer</option></select></label><label>Status<select id=us><option ${user?.status!=="Inactive"?"selected":""}>Active</option><option ${user?.status==="Inactive"?"selected":""}>Inactive</option></select></label></div><div class="panel"><h3>Options available to this user</h3>${checks}</div><button onclick="saveUser('${user?.id||""}')">Save User</button> <button onclick=close()>Cancel</button>`)}
+function saveUser(id){if(!requireAdmin())return;let username=uu.value.trim(),existing=db.users.find(u=>u.username===username&&u.id!==id);if(!username||existing){alert("Enter a unique username.");return}let i=db.users.findIndex(u=>u.id===id),old=i>=0?db.users[i]:null;if(old&&old.username===sessionUser()?.username&&us.value==="Inactive"){alert("You cannot deactivate your own signed-in account.");return}let permissions=[...document.querySelectorAll('input[name=permission]:checked')].map(x=>x.value),record={id:id||Date.now().toString(),username,name:un.value.trim()||username,password:up.value||old?.password||"",role:ur.value,status:us.value,lastLogin:old?.lastLogin||"",permissions};if(!record.password){alert("A password is required.");return}if(record.role!=="Admin"&&!permissions.length){alert("Select at least one option for this user.");return}if(i>=0)db.users[i]=record;else db.users.push(record);logActivity(i>=0?"Updated user":"Added user",username);close();save();}
+
+function renderRoomReport(){let sel=document.getElementById("reportRoom"),out=document.getElementById("roomReport");if(!sel||!out)return;let room=sel.value,items=db.assets.filter(a=>a.room===room);out.innerHTML=`<h3>${safe(room)} — ${items.length} item(s)</h3><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item / Equipment</th><th>Department</th><th>Condition</th><th>Status</th></tr></thead><tbody>${items.map(a=>`<tr><td>${safe(a.id)}</td><td>${safe(a.type||"Equipment")}</td><td>${safe(a.name)}</td><td>${safe(a.dept)}</td><td>${safe(a.condition)}</td><td>${safe(a.status)}</td></tr>`).join("")||"<tr><td colspan=6>No registered items in this room.</td></tr>"}</tbody></table>`}
+function printRoomReport(){let r=document.getElementById("roomReport");if(!r)return;let w=window.open("","_blank");w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px}th{background:#eee}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);w.document.close();w.print()}
+function downloadRoomReport(){let room=document.getElementById("reportRoom")?.value||"",rows=[["Room","Identification Code","Type","Item / Equipment","Department","Condition","Status"],...db.assets.filter(a=>a.room===room).map(a=>[room,a.id,a.type||"Equipment",a.name,a.dept,a.condition,a.status])],csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Room_Contents_"+room.replace(/[^a-z0-9]+/gi,"_")+".csv";a.click();URL.revokeObjectURL(a.href)}
+
+function renderSecurity(){
+ let u=sessionUser(),loginButton=u?`<button onclick="logout()">Sign out (${safe(u.username)})</button>`:`<button onclick="showLogin()">Admin / User Login</button>`,adminLinks=[...PERMISSION_LINKS,["users","Users"],["activity","Activity Log"],["control","Control Panel"]],viewerLinks=u?PERMISSION_LINKS.filter(([id])=>u.permissions.includes(id)):[];
+ document.getElementById("nav").innerHTML=(isAdmin()?adminLinks:(u?viewerLinks:[["dashboard","Dashboard"],["reports","Reports"]])).map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("")+loginButton;
+ let adminTools=document.getElementById("adminReportTools");if(adminTools)adminTools.style.display=isAdmin()?"block":"none";
+ let t=document.getElementById("usersT");if(t)t.innerHTML=db.users.map(x=>`<tr><td>${safe(x.username)}</td><td>${safe(x.name)}</td><td>${safe(x.role)}</td><td><span class="badge ${x.status==="Active"?"ok":"bad"}">${safe(x.status)}</span></td><td>${safe(safe(x.lastLogin)||"Never")}</td><td>${isAdmin()?`<button onclick='userForm(${JSON.stringify(x)})'>Edit</button>`:""}</td></tr>`).join("");
+ let a=document.getElementById("activityT");if(a)a.innerHTML=db.activity.map(x=>`<tr><td>${safe(x.time)}</td><td>${safe(x.user)}</td><td>${safe(x.action)}</td><td>${safe(x.details)}</td></tr>`).join("")||"<tr><td colspan=4>No activity recorded yet.</td></tr>";
+ let rs=document.getElementById("reportRoom");if(rs){let previous=rs.value;rs.innerHTML=[...new Set(db.rooms.map(r=>r.room))].map(r=>`<option ${r===previous?"selected":""}>${safe(r)}</option>`).join("");renderRoomReport()}
+}
+
+const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","doMove","missing","maintForm","saveMaint","auditForm","saveAudit","redTagForm","saveRedTag","resolveRedTagForm","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpBackup","cpRestoreBackup","cpResetConfig"];
+protectedMutations.forEach(name=>{
+  let original=window[name];
+  if(original){
+    window[name]=function(...args){
+      if(!requireAdmin())return;
+      let result=original.apply(this,args);
+      if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","saveRedTag","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);
+      return result;
+    }
+  }
+});
+
+const originalRender=render;
+render=function(){
+  originalRender();
+  renderSecurity();
+};
+
+securitySetup();
+cpRender();
+render();
+</script></body></html>
