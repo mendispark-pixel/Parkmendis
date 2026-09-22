@@ -7,11 +7,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- JsBarcode CDN -->
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- Firebase App (Core) SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<!-- Add Firebase products that you want to use (e.g., Firestore, Auth, Analytics) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <style>
 body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb;margin-bottom:12px}
 #control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
@@ -150,29 +145,6 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 <div id="modal" class="modal"><div id="box" class="box"></div></div>
 
 <script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyC-Fb4VCU0R7aNtO--4CyYCXnsYG-hdu-w",
-    authDomain: "park-5s-system.firebaseapp.com",
-    projectId: "park-5s-system",
-    storageBucket: "park-5s-system.firebasestorage.app",
-    messagingSenderId: "949666018852",
-    appId: "1:949666018852:web:a96333bd7f22e1e6cc4ab1",
-    measurementId: "G-P4Q8FCJZD5"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 const BASE_SYSTEM_URL = "https://mendispark-pixel.github.io/Parkmendis/";
 const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown","IT"];
 
