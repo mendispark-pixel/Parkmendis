@@ -776,8 +776,9 @@ function cpRestoreBackup(event){
    let x=JSON.parse(r.result);
    if(!x.database)throw new Error("Invalid backup file");
    localStorage.setItem("park5sConfig",JSON.stringify(x.config||CP_DEFAULTS));
-   localStorage.setItem("park5s",JSON.stringify(x.database));
-   alert("Backup restored. The system will reload.");
+   db = x.database;
+   save();
+   alert("Backup restored successfully. The system will reload.");
    location.reload();
   }catch(e){alert("Restore failed: "+e.message)}
  };
