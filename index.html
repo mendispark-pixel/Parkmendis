@@ -48,9 +48,6 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 /* Item Image Styles */
 .item-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
 </style>
-  <!-- Firebase App (Compat SDKs make upgrading easier for single-file apps) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head><body>
 <header><h1 id="sysHeaderTitle">PARK 5S System</h1><div id="sysHeaderSub">5S • Rooms • Assets • Maintenance • Location Control</div></header>
 <nav id="nav"></nav><main>
@@ -176,85 +173,6 @@ if (!db || !Array.isArray(db.rooms) || !Array.isArray(db.assets)) {
     activity: []
   };
 }
-  // 1. Initialize Firebase (Replace with your own config from Firebase Console)
-const firebaseConfig = {
-  apiKey: "AIzaSyC-Fb4VCU0R7aNtO--4CyYCXnsYG-hdu-w",
-  authDomain: "park-5s-system.firebaseapp.com",
-  projectId: "park-5s-system",
-  storageBucket: "park-5s-system.firebasestorage.app",
-  messagingSenderId: "949666018852",
-  appId: "1:949666018852:web:a96333bd7f22e1e6cc4ab1",
-  measurementId: "G-P4Q8FCJZD5"
-};
-
-firebase.initializeApp(firebaseConfig);
-const firestore = firebase.firestore();
-
-// Default fallback structure
-const defaultDb = {
-    rooms: [
-      {id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
-      {id:2,building:"PH",floor:"2nd Floor",dept:"Ward",room:"243",person:"Ward In-Charge",status:"Active"}
-    ],
-    assets: [
-      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[],photo:""},
-      {id:"EQ-001",name:"Ultrasound Machine",type:"Machine",dept:"Radiology (OPD)",room:"243",condition:"Good",purchase:"2025-01-10",value:1200000,status:"Active",last:"2026-06-01",next:"2026-12-01",history:[],photo:""},
-      {id:"IT-0456",name:"Ball Pen",type:"Small Item",dept:"Reception",room:"Reception Area",condition:"Good",purchase:"2026-01-01",value:50,status:"Active",last:"",next:"",history:[],photo:""},
-      {id:"WAR-243-FUR-001",name:"Bedside Locker",type:"Furniture",dept:"Ward",room:"243",condition:"Good",purchase:"2025-05-15",value:450000,status:"Active",last:"2026-07-10",next:"2027-01-10",history:[],photo:""}
-    ],
-    audits: [],
-    actions: [],
-    maintenance: [],
-    redtags: [],
-    users: [],
-    activity: []
-};
-
-let db = defaultDb;
-
-// 2. Asynchronous Save Function to Firestore
-function save() {
-    firestore.collection("park5s").doc("mainData").set(db)
-        .then(() => {
-            console.log("Data successfully synced to Firebase!");
-            render();
-        })
-        .catch((error) => {
-            console.error("Error writing document: ", error);
-            alert("Failed to save changes to the cloud.");
-        });
-}
-
-// 3. Load Data on Startup & Listen for Real-Time Changes
-function initCloudDatabase() {
-    firestore.collection("park5s").doc("mainData").get().then((doc) => {
-        if (doc.exists && doc.data().rooms) {
-            db = doc.data();
-        } else {
-            // If empty in cloud, initialize with defaults
-            db = defaultDb;
-            save();
-        }
-        securitySetup();
-        cpRender();
-        render();
-    }).catch((error) => {
-        console.error("Error getting document:", error);
-        // Fallback to local state if offline
-        render();
-    });
-
-    // Optional: Real-time listener so other users' updates appear instantly on your screen
-    firestore.collection("park5s").doc("mainData").onSnapshot((doc) => {
-        if (doc.exists && doc.data()) {
-            db = doc.data();
-            if(typeof render === "function") render();
-        }
-    });
-}
-
-// Kick off initialization instead of synchronous execution at the bottom
-initCloudDatabase();
 
 function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
 function close(){document.getElementById("modal").style.display="none"}
