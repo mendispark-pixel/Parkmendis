@@ -806,8 +806,72 @@ render=function(){
   originalRender();
   renderSecurity();
 };
+https://script.google.com/macros/s/AKfycbxdLkG_7VD7V-2DXWkBNtdwJrnk3ISXimptAclXjO7NH_0ncie2v7-_oRw2KpMvWTr3Hw/exec
+const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbxdLkG_7VD7V-2DXWkBNtdwJrnk3ISXimptAclXjO7NH_0ncie2v7-_oRw2KpMvWTr3Hw/exec";
+let isSyncingFromCloud = false;
 
+// Pull latest changes from Google Cloud in the background
+async function pollCloudData() {
+    if (isSyncingFromCloud) return;
+    try {
+        let response = await fetch(CLOUD_API_URL);
+        let cloudDb = await response.json();
+        
+        if (cloudDb && Array.isArray(cloudDb.rooms) && Array.isArray(cloudDb.assets)) {
+            let localString = localStorage.getItem("park5s");
+            let cloudString = JSON.stringify(cloudDb);
+            
+            if (localString !== cloudString) {
+                isSyncingFromCloud = true;
+                db = cloudDb;
+                localStorage.setItem("park5s", cloudString);
+                render();
+                isSyncingFromCloud = false;
+                console.log("Office data synced from cloud.");
+            }
+        }
+    } catch (e) {
+        console.error("Background sync check failed:", e);
+    }
+}
+
+// Override save to immediately push changes to the cloud
+const originalSave = save;
+save = async function() {
+    if (isSyncingFromCloud) return;
+    
+    localStorage.setItem("park5s", JSON.stringify(db));
+    render();
+
+    try {
+        await fetch(CLOUD_API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(db)
+        });
+    } catch (e) {
+        console.error("Failed to push update to cloud:", e);
+    }
+};
+
+// Check for updates from other staff members every 10 seconds
+setInterval(pollCloudData, 10000);
 securitySetup();
 cpRender();
+
+// Initial fetch from cloud on boot, then render
+fetch(CLOUD_API_URL)
+  .then(res => res.json())
+  .then(cloudDb => {
+      if (cloudDb && Array.isArray(cloudDb.rooms) && Array.isArray(cloudDb.assets)) {
+          db = cloudDb;
+          localStorage.setItem("park5s", JSON.stringify(db));
+      }
+      render();
+  })
+  .catch(() => {
+      render(); // Fallback to local if offline
+  });
 render();
 </script></body></html>
