@@ -133,7 +133,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 </div>
 <div class="card">
 <h3>Live Database</h3>
-<p style="font-size:12px;color:#666">This system is connected to the central Google database.</p>
+<p style="font-size:12px;color:#666">This system is connected to the central Google Sheet database.</p><p style="font-size:12px"><a href="https://docs.google.com/spreadsheets/d/1CYWaepdS4Q27JXID6wEQjTA7dPgRb_7nTaiZwfQhibw/edit" target="_blank" rel="noopener">Open Google Sheet</a></p>
 <span id="liveDbStatus" class="badge">Connecting...</span>
 <br><br>
 <button onclick="syncFromServer()">Refresh Live Data</button>
@@ -151,6 +151,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 const BASE_SYSTEM_URL = "https://mendispark-pixel.github.io/Parkmendis/";
 // Google Apps Script Web App URL.
 // After deploying Code.gs, paste the Web App URL here.
+const GOOGLE_SHEET_ID = "1CYWaepdS4Q27JXID6wEQjTA7dPgRb_7nTaiZwfQhibw";
 const GOOGLE_DB_API = "https://script.google.com/macros/s/AKfycbwCM4AAOdcsaKgTDiRE9zwCsMAqZBMtmKERutOP7HzhvxpauHVeIhD8kRzsaOYkBD9z/exec";
 const LIVE_DB_ENABLED = !GOOGLE_DB_API.includes("PASTE_YOUR_");
 
@@ -184,6 +185,7 @@ if (!db || !Array.isArray(db.rooms) || !Array.isArray(db.assets)) {
 
 let liveSaveTimer = null;
 let liveSaveBusy = false;
+let liveSavePending = false;
 
 function setLiveDbStatus(text, good=true){
   const el=document.getElementById("liveDbStatus");
@@ -225,6 +227,7 @@ function recordKey(collection, record){
   delete copy.updatedAt;
   return JSON.stringify(copy);
 }
+
 function mergeRecordArrays(existing, incoming, collection){
   const result = Array.isArray(existing) ? existing.map(x => JSON.parse(JSON.stringify(x))) : [];
   const index = new Map();
@@ -314,43 +317,56 @@ async function saveToLiveDatabase(){
     setLiveDbStatus("Google database not configured", false);
     return false;
   }
-  if(liveSaveBusy) return false;
+
+  // Never drop a change made while another request is still saving.
+  if(liveSaveBusy){
+    liveSavePending = true;
+    return true;
+  }
 
   liveSaveBusy=true;
+  liveSavePending=false;
   setLiveDbStatus("Saving...", true);
 
   try{
     const payload=buildPayload(db, cpConfig());
+    payload.sheetId = GOOGLE_SHEET_ID;
+
     const response=await fetch(GOOGLE_DB_API,{
       method:"POST",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
+      body:JSON.stringify(payload),
+      cache:"no-store"
     });
 
-    const result=await response.json();
-    if(!result.ok) throw new Error(result.error||"Database merge failed");
+    const text=await response.text();
+    let result;
+    try{ result=JSON.parse(text); }
+    catch(_){ throw new Error("Google Apps Script returned a non-JSON response: "+text.slice(0,180)); }
 
-    if(result.database){
-      db=normaliseDatabaseShape(result.database);
-      if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
-    }
+    if(!response.ok || !result.ok) throw new Error(result.error||("HTTP "+response.status));
+
+    if(result.database) db=normaliseDatabaseShape(result.database);
+    if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
 
     localCacheSave();
     render();
     setLiveDbStatus(
-      result.added || result.updated
-        ? `Saved: ${result.added||0} added / ${result.updated||0} updated`
-        : "Live database connected",
+      `Google Sheet saved${result.added||result.updated ? `: ${result.added||0} added / ${result.updated||0} updated` : ""}`,
       true
     );
     return true;
   }catch(e){
     console.error(e);
-    setLiveDbStatus("Save failed - check connection", false);
-    alert("The central Google database could not be updated.\n\n"+e.message);
+    setLiveDbStatus("Save failed - check Apps Script deployment", false);
+    alert("The central Google Sheet could not be updated.\n\n"+e.message);
     return false;
   }finally{
     liveSaveBusy=false;
+    if(liveSavePending){
+      liveSavePending=false;
+      setTimeout(()=>saveToLiveDatabase(),50);
+    }
   }
 }
 
@@ -363,28 +379,36 @@ function save(){
 
 async function syncFromServer(){
   if(!LIVE_DB_ENABLED){
-    alert("First deploy the Google Apps Script and paste its Web App URL into index.html.");
+    alert("First deploy Code.gs as a Google Apps Script Web App and paste its Web App URL into index.html.");
     return;
   }
 
   try{
     setLiveDbStatus("Loading...", true);
-    const response=await fetch(GOOGLE_DB_API+"?action=load&t="+Date.now(),{cache:"no-store"});
-    const result=await response.json();
-    if(!result.ok) throw new Error(result.error||"Database load failed");
+    const url=GOOGLE_DB_API+"?action=load&sheetId="+encodeURIComponent(GOOGLE_SHEET_ID)+"&t="+Date.now();
+    const response=await fetch(url,{cache:"no-store"});
+    const text=await response.text();
+    let result;
+    try{ result=JSON.parse(text); }
+    catch(_){ throw new Error("Google Apps Script returned a non-JSON response: "+text.slice(0,180)); }
+    if(!response.ok || !result.ok) throw new Error(result.error||("HTTP "+response.status));
 
-    if(result.database){
-      db=normaliseDatabaseShape(result.database);
-      if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
-      localCacheSave();
-      cpRender();
-      render();
-      setLiveDbStatus("Live database connected", true);
-    }
+    if(result.database) db=normaliseDatabaseShape(result.database);
+    if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
+
+    // Ensure a brand-new/empty sheet still has usable default users and arrays,
+    // then persist those defaults to the sheet.
+    securitySetup();
+    localCacheSave();
+    cpRender();
+    render();
+    setLiveDbStatus("Live Google Sheet connected", true);
+
+    if(result.isEmpty) saveToLiveDatabase();
   }catch(e){
     console.error(e);
     setLiveDbStatus("Connection failed", false);
-    alert("Could not load the central Google database.\n\n"+e.message);
+    alert("Could not load the central Google Sheet.\n\n"+e.message);
   }
 }
 
@@ -479,7 +503,7 @@ async function restoreJsonFile(){
     const response=await fetch(GOOGLE_DB_API,{
       method:"POST",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(buildPayload(db,mergedConfig))
+      body:JSON.stringify(Object.assign(buildPayload(db,mergedConfig),{sheetId:GOOGLE_SHEET_ID}))
     });
     const result=await response.json();
     if(!result.ok) throw new Error(result.error||"Google Sheet merge failed");
@@ -1044,7 +1068,7 @@ function cpAdd(type,id){
 function cpRemove(type,i){
  if(!cpAdmin())return;
  let c=cpConfig();c[type].splice(i,1);
- localStorage.setItem("park5sConfig",JSON.stringify(c));cpRender();
+ localStorage.setItem("park5sConfig",JSON.stringify(c));cpRender();saveToLiveDatabase();
 }
 function cpList(type,id){
  let c=cpConfig(),el=document.getElementById(id);if(!el)return;
@@ -1060,7 +1084,7 @@ function cpRender(){
 function cpResetConfig(){
  if(!cpAdmin()){alert("Admin access required.");return}
  if(confirm("Reset Control Panel settings to defaults? Rooms and assets will remain.")){
-  localStorage.setItem("park5sConfig",JSON.stringify(CP_DEFAULTS));cpRender();alert("Configuration reset.");
+  localStorage.setItem("park5sConfig",JSON.stringify(CP_DEFAULTS));cpRender();saveToLiveDatabase();alert("Configuration reset and queued for Google Sheet sync.");
  }
 }
 
@@ -1082,7 +1106,13 @@ function isAdmin(){let u=sessionUser();return !!u&&u.role==="Admin"}
 function canAccess(id){let u=sessionUser();return !!u&&(u.role==="Admin"||u.permissions.includes(id))}
 function requireAdmin(){if(isAdmin())return true;alert("Administrator login is required.");showLogin();return false}
 function safe(v){return String(v==null?"":v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
-function logActivity(action,details){let u=sessionUser();if(!u)return;db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});localStorage.setItem("park5s",JSON.stringify(db));}
+function logActivity(action,details){
+ let u=sessionUser();if(!u)return;
+ db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});
+ localCacheSave();
+ clearTimeout(liveSaveTimer);
+ liveSaveTimer=setTimeout(()=>saveToLiveDatabase(),150);
+}
 function showLogin(){openModal(`<h2>Sign in</h2><label>Username<input id=loginUser autocomplete=username></label><label>Password<input id=loginPass type=password autocomplete=current-password></label><br><button onclick=login()>Sign in</button>`)}
 function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.password===loginPass.value&&x.status==="Active");if(!u){alert("Invalid credentials.");return}sessionStorage.setItem("park5sUser",u.username);u.lastLogin=new Date().toLocaleString();logActivity("Signed in","Successful login");close();if(u.role!=="Admin"){go("reports");return}render();}
 function logout(){let u=sessionUser();if(u)logActivity("Signed out","");sessionStorage.removeItem("park5sUser");render();}
