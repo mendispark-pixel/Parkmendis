@@ -225,51 +225,6 @@ function recordKey(collection, record){
   delete copy.updatedAt;
   return JSON.stringify(copy);
 }
-function doPost(e) {
-      try {
-        var data = JSON.parse(e.postData.contents);
-        var action = data.action;
-        
-        if (action === "merge") {
-          var props = PropertiesService.getScriptProperties();
-          props.setProperty("PARK_5S_DB", JSON.stringify(data.database));
-          props.setProperty("PARK_5S_CONFIG", JSON.stringify(data.config));
-          
-          return ContentService.createTextOutput(JSON.stringify({
-            ok: true,
-            added: 0,
-            updated: 1,
-            database: data.database,
-            config: data.config
-          })).setMimeType(ContentService.MimeType.JSON);
-        }
-        
-        return ContentService.createTextOutput(JSON.stringify({ ok: false, error: "Unknown action" }))
-                             .setMimeType(ContentService.MimeType.JSON);
-                             
-      } catch (The **"Unknown action"** error occurs because your frontend JavaScript sends a request with `action: "merge"`, but your deployed Google Apps Script backend (`Code.gs`) does not recognize or handle that specific action name. 
-
-To resolve this issue and enable successful data saving to your Google Sheet, follow these steps:
-
-<Steps>
-  <Step title="Update your Google Apps Script (Code.gs) Code" subtitle="Step 1">
-    Open your Google Apps Script project and ensure your `doPost(e)` function is set up to parse the incoming JSON payload and explicitly handle the `"merge"` action. 
-    *Verification:* Your script should read `var action = data.action;` and contain a matching `if (action === "merge")` block that updates your Google Sheet and returns `{ ok: true }`.
-  </Step>
-  <Step title="Deploy as a New Version" subtitle="Step 2">
-    In the Apps Script editor, click **Deploy** > **Manage deployments** (or **New deployment**). Select **Web app**, ensure **Execute as** is set to **Me**, and **Who has access** is set to **Anyone**. 
-    *Verification:* Save the deployment and copy the updated Web App URL if it changed.
-  </Step>
-  <Step title="Verify the Web App URL in your HTML" subtitle="Step 3">
-    Confirm that the `GOOGLE_DB_API` constant in your HTML file matches your newly deployed Google Apps Script Web App URL.
-    *Verification:* Reload your HTML application, make a configuration change or save action, and check that the Live Database status badge turns green indicating a successful sync.
-  </Step>
-</Steps>
-
-<Elicitations message="What would you like to do next?">
-  <Elicitation label="Provide Code.gs script template" query="Can you provide the complete Code.gs script code that handles the merge action?" />
-  <Elicitation label="Test connection locally" query="How can I test the Google Apps Script endpoint independently?" />
-</Elicitations>
 function mergeRecordArrays(existing, incoming, collection){
   const result = Array.isArray(existing) ? existing.map(x => JSON.parse(JSON.stringify(x))) : [];
   const index = new Map();
