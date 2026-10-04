@@ -91,7 +91,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 </div>
 </section>
 
-<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="exportData()">Export JSON</button> <button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
+<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
 
 <section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change a user's role, or set their status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
 <section id="activity" class="page"><h2>Activity Log</h2><div class="notice">Shows the signed-in user responsible for protected actions.</div><div class="panel"><table><thead><tr><th>Date & time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody id="activityT"></tbody></table></div></section>
@@ -132,10 +132,11 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 <div id="cpCriterionList" class="control-list"></div>
 </div>
 <div class="card">
-<h3>Backup & Restore</h3>
-<button onclick="cpBackup()">Download Full Backup</button>
-<button onclick="document.getElementById('cpRestore').click()">Restore Backup</button>
-<input id="cpRestore" type="file" accept=".json" style="display:none" onchange="cpRestoreBackup(event)">
+<h3>Live Database</h3>
+<p style="font-size:12px;color:#666">This system is connected to the central Google database.</p>
+<span id="liveDbStatus" class="badge">Connecting...</span>
+<br><br>
+<button onclick="syncFromServer()">Refresh Live Data</button>
 <button onclick="cpResetConfig()" style="background:#b91c1c">Reset Configuration</button>
 <p style="font-size:12px;color:#666">Resetting configuration does not delete rooms/assets.</p>
 </div>
@@ -146,6 +147,11 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 
 <script>
 const BASE_SYSTEM_URL = "https://mendispark-pixel.github.io/Parkmendis/";
+// Google Apps Script Web App URL.
+// After deploying Code.gs, paste the Web App URL here.
+const GOOGLE_DB_API = "https://script.google.com/macros/s/AKfycbz8LVsqaDWhXv5PvKcYBRMjC7vTwTgGPc5cgtY9kiXJ46lvKmtw83_qa8u4_2UalQ3i/exec";
+const LIVE_DB_ENABLED = !GOOGLE_DB_API.includes("PASTE_YOUR_");
+
 const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown","IT"];
 
 let db = null;
@@ -174,7 +180,89 @@ if (!db || !Array.isArray(db.rooms) || !Array.isArray(db.assets)) {
   };
 }
 
-function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
+let liveSaveTimer = null;
+let liveSaveBusy = false;
+
+function setLiveDbStatus(text, good=true){
+  const el=document.getElementById("liveDbStatus");
+  if(el){
+    el.textContent=text;
+    el.className="badge "+(good?"ok":"bad");
+  }
+}
+
+function localCacheSave(){
+  // Temporary browser cache only. The central database is Google Sheets.
+  try{
+    localStorage.setItem("park5s",JSON.stringify(db));
+    localStorage.setItem("park5sConfig",JSON.stringify(cpConfig()));
+  }catch(e){}
+}
+
+async function saveToLiveDatabase(){
+  if(!LIVE_DB_ENABLED){
+    setLiveDbStatus("Google database not configured", false);
+    return false;
+  }
+  if(liveSaveBusy) return false;
+  liveSaveBusy=true;
+  setLiveDbStatus("Saving...", true);
+  try{
+    const payload={
+      action:"save",
+      database:db,
+      config:cpConfig(),
+      savedAt:new Date().toISOString()
+    };
+    const response=await fetch(GOOGLE_DB_API,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    const result=await response.json();
+    if(!result.ok) throw new Error(result.error||"Database save failed");
+    setLiveDbStatus("Live database connected", true);
+    return true;
+  }catch(e){
+    console.error(e);
+    setLiveDbStatus("Save failed - check connection", false);
+    alert("The central Google database could not be updated.\n\n"+e.message);
+    return false;
+  }finally{
+    liveSaveBusy=false;
+  }
+}
+
+function save(){
+  localCacheSave();
+  render();
+  clearTimeout(liveSaveTimer);
+  liveSaveTimer=setTimeout(()=>saveToLiveDatabase(),150);
+}
+
+async function syncFromServer(){
+  if(!LIVE_DB_ENABLED){
+    alert("First deploy the Google Apps Script and paste its Web App URL into GOOGLE_DB_API in index.html.");
+    return;
+  }
+  try{
+    setLiveDbStatus("Loading...", true);
+    const response=await fetch(GOOGLE_DB_API+"?action=load&t="+Date.now(),{cache:"no-store"});
+    const result=await response.json();
+    if(!result.ok) throw new Error(result.error||"Database load failed");
+    if(result.database){
+      db=result.database;
+      if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
+      localCacheSave();
+      render();
+      setLiveDbStatus("Live database connected", true);
+    }
+  }catch(e){
+    console.error(e);
+    setLiveDbStatus("Connection failed", false);
+    alert("Could not load the central Google database.\n\n"+e.message);
+  }
+}
 function close(){document.getElementById("modal").style.display="none"}
 function openModal(x){document.getElementById("box").innerHTML=x;document.getElementById("modal").style.display="flex"}
 
@@ -660,10 +748,7 @@ function render(){
   renderLabelsTab();
 }
 
-function exportData(){
-  let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");
-  a.href=u;a.download="PARK_5S_Data.json";a.click();URL.revokeObjectURL(u);
-}
+function exportData(){alert("JSON export has been removed. The system now uses the live Google database.");}
 
 const CP_DEFAULTS={
   name:"PARK 5S Management System",
@@ -714,28 +799,6 @@ function cpRender(){
  document.getElementById("sysHeaderTitle").textContent=c.name;
  document.getElementById("sysHeaderSub").textContent=c.subtitle;
  cpList("departments","cpDeptList");cpList("statuses","cpStatusList");cpList("conditions","cpConditionList");cpList("criteria","cpCriterionList");
-}
-function cpBackup(){
- if(!cpAdmin()){alert("Admin access required.");return}
- let payload={version:4,exportedAt:new Date().toISOString(),config:cpConfig(),database:db};
- let blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
- let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="PARK_5S_Full_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();
-}
-function cpRestoreBackup(event){
- if(!cpAdmin()){alert("Admin access required.");return}
- let f=event.target.files[0];if(!f)return;
- let r=new FileReader();
- r.onload=function(){
-  try{
-   let x=JSON.parse(r.result);
-   if(!x.database)throw new Error("Invalid backup file");
-   localStorage.setItem("park5sConfig",JSON.stringify(x.config||CP_DEFAULTS));
-   localStorage.setItem("park5s",JSON.stringify(x.database));
-   alert("Backup restored. The system will reload.");
-   location.reload();
-  }catch(e){alert("Restore failed: "+e.message)}
- };
- r.readAsText(f);
 }
 function cpResetConfig(){
  if(!cpAdmin()){alert("Admin access required.");return}
@@ -810,4 +873,9 @@ render=function(){
 securitySetup();
 cpRender();
 render();
+if(LIVE_DB_ENABLED){
+  syncFromServer();
+} else {
+  setTimeout(()=>setLiveDbStatus("Google database not configured", false),0);
+}
 </script></body></html>
