@@ -1192,9 +1192,48 @@ function downloadAuditReportCSV(){
   a.click(); URL.revokeObjectURL(a.href);
 }
 
-function auditForm(){openModal(`<h2>5S Audit</h2><div class=grid><label>Department<select id=xdept>${configuredDepartments().map(d=>`<option>${d}</option>`).join("")}</select></label><label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Auditor<input id=xaud></label><label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>${["Sort","Set in Order","Shine","Standardize","Sustain"].map(s=>`<label>${s}<select id=x${s.replaceAll(" ","")}><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>`).join("")}</div><label>Finding<textarea id=xf></textarea></label><label>Corrective Action<textarea id=xa></textarea></label><button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`)}
+function auditForm() {
+  openModal(`<h2>5S Audit</h2><div class=grid>
+  <label>Department<select id=xdept>${configuredDepartments().map(d=>`<option>${d}</option>`).join("")}</select></label>
+  <label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label>
+  <label>Auditor<input id=xaud></label>
+  <label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>
+  <label>Sort<select id=xSort><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  <label>Set in Order<select id=xSetInOrder><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  <label>Shine<select id=xShine><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  <label>Standardize<select id=xStandardize><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  <label>Sustain<select id=xSustain><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  </div>
+  <label>Finding<textarea id=xf></textarea></label>
+  <label>Corrective Action<textarea id=xa></textarea></label>
+  <button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`);
+}
 
 function saveAudit() {
+  let vals = ["Sort", "SetInOrder", "Shine", "Standardize", "Sustain"].map(
+    s => +document.getElementById("x" + s).value
+  );
+  db.audits.push({
+    date: xdate.value,
+    dept: xdept.value,
+    room: xroom.value,
+    auditor: xaud.value,
+    vals
+  });
+  if (xa.value) {
+    db.actions.push({
+      date: xdate.value,
+      type: "5S Corrective Action",
+      item: "Room Audit",
+      location: xroom.value,
+      finding: xf.value,
+      status: "Open"
+    });
+  }
+  close();
+  save();
+}
+  function saveAudit() {
   try {
     const deptEl = document.getElementById("xdept");
     const roomEl = document.getElementById("xroom");
