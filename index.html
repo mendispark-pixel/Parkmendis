@@ -46,7 +46,16 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 .lbl-qr-box .qr-sub { font-size: 8px; color: #555; margin-top: 4px; font-weight: bold; }
 
 /* Item Image Styles */
+
 .item-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+.audit-report-score{font-size:28px;font-weight:700;color:#123b5d}
+.audit-report-good{background:#dcfce7;color:#166534;padding:5px 9px;border-radius:12px;font-weight:bold}
+.audit-report-warn{background:#fef3c7;color:#92400e;padding:5px 9px;border-radius:12px;font-weight:bold}
+.audit-report-bad{background:#fee2e2;color:#991b1b;padding:5px 9px;border-radius:12px;font-weight:bold}
+.audit-report-mini{font-size:12px;color:#666}
+.audit-report-bar{height:10px;background:#e5e7eb;border-radius:8px;overflow:hidden;margin-top:5px}
+.audit-report-fill{height:100%;background:#123b5d}
+
 </style>
 </head><body>
 <header><h1 id="sysHeaderTitle">PARK 5S System</h1><div id="sysHeaderSub">5S • Rooms • Assets • Maintenance • Location Control</div></header>
@@ -91,7 +100,44 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 </div>
 </section>
 
-<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
+<section id="reports" class="page"><h2>Reports</h2>
+<div class="panel">
+<h3>Room Contents Report</h3>
+<p>Select a room to list every registered item currently assigned to it.</p>
+<div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br>
+<button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button>
+<div id="roomReport" class="panel"></div>
+</div>
+
+<div class="panel">
+<h3>5S Audit Performance Report</h3>
+<p>View completed 5S audits and measure department-wise performance without changing the existing 5S Audit process.</p>
+<div class="grid">
+  <label>Department
+    <select id="auditReportDept" onchange="renderAuditReport()"></select>
+  </label>
+  <label>From Date
+    <input id="auditReportFrom" type="date" onchange="renderAuditReport()">
+  </label>
+  <label>To Date
+    <input id="auditReportTo" type="date" onchange="renderAuditReport()">
+  </label>
+  <label>View
+    <select id="auditReportView" onchange="renderAuditReport()">
+      <option value="summary">Department Summary</option>
+      <option value="details">Audit Details</option>
+    </select>
+  </label>
+</div>
+<br>
+<button onclick="printAuditReport()">Print / Save PDF</button>
+<button onclick="downloadAuditReportCSV()">Download CSV</button>
+<div id="auditReportSummary" class="panel"></div>
+<div id="auditReportBody" class="panel"></div>
+</div>
+
+<div id="adminReportTools"><button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div>
+</section>
 
 <section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change a user's role, or set their status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
 <section id="activity" class="page"><h2>Activity Log</h2><div class="notice">Shows the signed-in user responsible for protected actions.</div><div class="panel"><table><thead><tr><th>Date & time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody id="activityT"></tbody></table></div></section>
@@ -982,8 +1028,293 @@ function renderRedTagPreview(){
 function maintForm(){openModal(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
 function saveMaint(){let a=db.assets.find(x=>x.id==mi.value);a.last=md.value;a.next=mn.value;a.status="Active";db.maintenance.push({asset:a.name,id:a.id,last:md.value,next:mn.value,provider:mp.value,cost:+mv.value||0});close();save()}
 
+
+function auditReportScore(a){
+  if(!a || !Array.isArray(a.vals) || !a.vals.length) return 0;
+  return Math.round(a.vals.reduce((x,y)=>x+(+y||0),0)/(a.vals.length*4)*100);
+}
+
+function auditReportClass(score){
+  if(score>=80) return "audit-report-good";
+  if(score>=60) return "audit-report-warn";
+  return "audit-report-bad";
+}
+
+function auditReportFiltered(){
+  let dept=document.getElementById("auditReportDept")?.value||"ALL";
+  let from=document.getElementById("auditReportFrom")?.value||"";
+  let to=document.getElementById("auditReportTo")?.value||"";
+  return (db.audits||[]).filter(a=>{
+    if(dept!=="ALL" && a.dept!==dept) return false;
+    if(from && a.date<from) return false;
+    if(to && a.date>to) return false;
+    return true;
+  }).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+}
+
+function auditReportDepartmentStats(audits){
+  let groups={};
+  audits.forEach(a=>{
+    let d=a.dept||"Unknown";
+    if(!groups[d]) groups[d]={dept:d,count:0,total:0,latest:null,criteria:[0,0,0,0,0]};
+    let g=groups[d], vals=Array.isArray(a.vals)?a.vals.map(v=>+v||0):[0,0,0,0,0];
+    g.count++;
+    g.total+=auditReportScore(a);
+    vals.forEach((v,i)=>{if(i<5)g.criteria[i]+=v;});
+    if(!g.latest || String(a.date)>String(g.latest.date)) g.latest=a;
+  });
+  return Object.values(groups).map(g=>{
+    let avg=g.count?Math.round(g.total/g.count):0;
+    let criteria=g.criteria.map(v=>g.count?Math.round(v/g.count/4*100):0);
+    return Object.assign(g,{avg,criteria});
+  }).sort((a,b)=>b.avg-a.avg);
+}
+
+function renderAuditReportControls(){
+  let sel=document.getElementById("auditReportDept");
+  if(!sel)return;
+  let previous=sel.value||"ALL";
+  let depts=[...new Set(configuredDepartments().concat((db.audits||[]).map(a=>a.dept).filter(Boolean)))];
+  sel.innerHTML=`<option value="ALL">All Departments</option>`+
+    depts.map(d=>`<option value="${safe(d)}">${safe(d)}</option>`).join("");
+  if(depts.includes(previous)) sel.value=previous; else sel.value="ALL";
+}
+
+function renderAuditReport(){
+  let summary=document.getElementById("auditReportSummary"), body=document.getElementById("auditReportBody");
+  if(!summary||!body)return;
+  renderAuditReportControls();
+
+  let audits=auditReportFiltered();
+  let stats=auditReportDepartmentStats(audits);
+  let view=document.getElementById("auditReportView")?.value||"summary";
+
+  if(!audits.length){
+    summary.innerHTML=`<div class="notice">No completed 5S audits match the selected filters.</div>`;
+    body.innerHTML="";
+    return;
+  }
+
+  let overall=Math.round(audits.reduce((t,a)=>t+auditReportScore(a),0)/audits.length);
+  let best=stats[0];
+  let weakest=[...stats].sort((a,b)=>a.avg-b.avg)[0];
+
+  summary.innerHTML=`
+    <div class="cards">
+      <div class="card">Audits Completed<b>${audits.length}</b></div>
+      <div class="card">Overall 5S Performance<b>${overall}%</b></div>
+      <div class="card">Best Department<b>${safe(best?.dept||"—")}</b><div class="audit-report-mini">${best?best.avg+"% average":"—"}</div></div>
+      <div class="card">Needs Attention<b>${safe(weakest?.dept||"—")}</b><div class="audit-report-mini">${weakest?weakest.avg+"% average":"—"}</div></div>
+    </div>`;
+
+  if(view==="details"){
+    body.innerHTML=`
+      <h3>Completed 5S Audit Details</h3>
+      <table>
+        <thead><tr><th>Date</th><th>Department</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Set in Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead>
+        <tbody>${audits.map(a=>{
+          let v=Array.isArray(a.vals)?a.vals:[0,0,0,0,0], score=auditReportScore(a);
+          return `<tr><td>${safe(a.date)}</td><td>${safe(a.dept)}</td><td>${safe(a.room)}</td><td>${safe(a.auditor)}</td>
+            ${[0,1,2,3,4].map(i=>`<td>${v[i]??0}/4</td>`).join("")}
+            <td><span class="${auditReportClass(score)}">${score}%</span></td></tr>`;
+        }).join("")}</tbody>
+      </table>`;
+    return;
+  }
+
+  body.innerHTML=`
+    <h3>Department-wise 5S Performance</h3>
+    <table>
+      <thead><tr><th>Department</th><th>Audits</th><th>Average Score</th><th>Latest Audit</th><th>Sort</th><th>Set in Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th></tr></thead>
+      <tbody>${stats.map(g=>`
+        <tr>
+          <td><b>${safe(g.dept)}</b></td>
+          <td>${g.count}</td>
+          <td><span class="${auditReportClass(g.avg)}">${g.avg}%</span></td>
+          <td>${safe(g.latest?.date||"—")}</td>
+          ${g.criteria.map(s=>`<td><div>${s}%</div><div class="audit-report-bar"><div class="audit-report-fill" style="width:${s}%"></div></div></td>`).join("")}
+        </tr>`).join("")}</tbody>
+    </table>
+    <br>
+    <h3>5S Category Performance — Selected Department / All Departments</h3>
+    <table>
+      <thead><tr><th>5S Category</th><th>Average Performance</th></tr></thead>
+      <tbody>
+        ${["Sort","Set in Order","Shine","Standardize","Sustain"].map((name,i)=>{
+          let vals=audits.map(a=>(Array.isArray(a.vals)?+a.vals[i]||0:0)/4*100);
+          let avg=vals.length?Math.round(vals.reduce((x,y)=>x+y,0)/vals.length):0;
+          return `<tr><td><b>${name}</b></td><td>${avg}% <div class="audit-report-bar"><div class="audit-report-fill" style="width:${avg}%"></div></div></td></tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+function printAuditReport(){
+  let r=document.getElementById("auditReportSummary"), b=document.getElementById("auditReportBody");
+  if(!r||!b||(!r.innerHTML.trim()&&!b.innerHTML.trim())){alert("Please select or complete a 5S Audit Report first.");return}
+  let w=window.open("","_blank");
+  if(!w){alert("Please allow pop-ups for this site to print the report.");return}
+  w.document.write(`<html><head><title>PARK 5S Audit Performance Report</title><style>
+    body{font-family:Arial,sans-serif;padding:25px;color:#222}
+    h1,h2,h3{color:#123b5d}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border:1px solid #bbb;padding:7px;font-size:11px;text-align:left}
+    th{background:#eef2f5}
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .card{border:1px solid #ddd;padding:10px;border-radius:6px}
+    .card b{display:block;font-size:22px;margin-top:5px}
+    .audit-report-good{background:#dcfce7;color:#166534;padding:3px 6px;border-radius:10px;font-weight:bold}
+    .audit-report-warn{background:#fef3c7;color:#92400e;padding:3px 6px;border-radius:10px;font-weight:bold}
+    .audit-report-bad{background:#fee2e2;color:#991b1b;padding:3px 6px;border-radius:10px;font-weight:bold}
+    .audit-report-bar{height:7px;background:#e5e7eb;border-radius:6px;overflow:hidden}
+    .audit-report-fill{height:100%;background:#123b5d}
+  </style></head><body>
+  <h1>PARK 5S Management System</h1>
+  <h2>5S Audit Performance Report</h2>
+  <p>Generated: ${new Date().toLocaleString()}</p>
+  ${r.innerHTML}${b.innerHTML}</body></html>`);
+  w.document.close(); w.print();
+}
+
+function downloadAuditReportCSV(){
+  let audits=auditReportFiltered();
+  if(!audits.length){alert("No audit records match the selected filters.");return}
+  let rows=[["Date","Department","Room","Auditor","Sort","Set in Order","Shine","Standardize","Sustain","Total %"]];
+  audits.forEach(a=>{
+    let v=Array.isArray(a.vals)?a.vals:[0,0,0,0,0];
+    rows.push([a.date,a.dept,a.room,a.auditor,v[0]??0,v[1]??0,v[2]??0,v[3]??0,v[4]??0,auditReportScore(a)]);
+  });
+  let csv=rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\\n");
+  let blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="PARK_5S_Audit_Report_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
 function auditForm(){openModal(`<h2>5S Audit</h2><div class=grid><label>Department<select id=xdept>${configuredDepartments().map(d=>`<option>${d}</option>`).join("")}</select></label><label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Auditor<input id=xaud></label><label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>${["Sort","Set in Order","Shine","Standardize","Sustain"].map(s=>`<label>${s}<select id=x${s.replaceAll(" ","")}><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>`).join("")}</div><label>Finding<textarea id=xf></textarea></label><label>Corrective Action<textarea id=xa></textarea></label><button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`)}
-function saveAudit(){let vals=["Sort","SetInOrder","Shine","Standardize","Sustain"].map(s=>+document.getElementById("x"+s).value);db.audits.push({date:xdate.value,dept:xdept.value,room:xroom.value,auditor:xaud.value,vals});if(xa.value)db.actions.push({date:xdate.value,type:"5S Corrective Action",item:"Room Audit",location:xroom.value,finding:xf.value,status:"Open"});close();save()}
+
+function saveAudit() {
+  try {
+    const deptEl = document.getElementById("xdept");
+    const roomEl = document.getElementById("xroom");
+    const auditorEl = document.getElementById("xaud");
+    const dateEl = document.getElementById("xdate");
+    const findingEl = document.getElementById("xf");
+    const actionEl = document.getElementById("xa");
+
+    if (
+      !deptEl ||
+      !roomEl ||
+      !auditorEl ||
+      !dateEl
+    ) {
+      alert("5S Audit form could not be read.");
+      return;
+    }
+
+    const date = dateEl.value;
+    const dept = deptEl.value;
+    const room = roomEl.value;
+    const auditor = auditorEl.value.trim();
+
+    if (!date || !dept || !room || !auditor) {
+      alert(
+        "Please complete the Audit Date, Department, Room and Auditor fields."
+      );
+      return;
+    }
+
+    const scoreNames = [
+      "Sort",
+      "SetInOrder",
+      "Shine",
+      "Standardize",
+      "Sustain"
+    ];
+
+    const vals = scoreNames.map(function (name) {
+      const el = document.getElementById("x" + name);
+
+      if (!el) {
+        throw new Error("Missing score field: " + name);
+      }
+
+      const score = Number(el.value);
+
+      if (!Number.isInteger(score) || score < 0 || score > 4) {
+        throw new Error("Invalid score for: " + name);
+      }
+
+      return score;
+    });
+
+    if (!Array.isArray(db.audits)) {
+      db.audits = [];
+    }
+
+    if (!Array.isArray(db.actions)) {
+      db.actions = [];
+    }
+
+    const audit = {
+      date: date,
+      dept: dept,
+      room: room,
+      auditor: auditor,
+      vals: vals
+    };
+
+    db.audits.push(audit);
+
+    const finding = findingEl
+      ? findingEl.value.trim()
+      : "";
+
+    const correctiveAction = actionEl
+      ? actionEl.value.trim()
+      : "";
+
+    if (correctiveAction) {
+      db.actions.push({
+        date: date,
+        type: "5S Corrective Action",
+        item: "Room Audit",
+        location: room,
+        finding: finding
+          ? finding + " | Action: " + correctiveAction
+          : correctiveAction,
+        status: "Open"
+      });
+    }
+
+    localCacheSave();
+
+    render();
+
+    close();
+
+    if (typeof saveToLiveDatabase === "function") {
+      saveToLiveDatabase();
+    } else if (typeof save === "function") {
+      save();
+    }
+
+    alert(
+      "5S Audit recorded locally. " +
+      "Please verify the Live Database save status."
+    );
+
+  } catch (error) {
+    console.error("5S Audit Save Error:", error);
+
+    alert(
+      "5S Audit could not be saved.\n\n" +
+      error.message
+    );
+  }
+}
+
 
 function render(){
   let today=new Date().toISOString().slice(0,10);
@@ -1022,6 +1353,7 @@ function render(){
   document.getElementById("summary").textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing:missingCount,needsRepair:repairCount,maintenanceDue:dueCount},null,2);
   renderRedTagPreview();
   renderLabelsTab();
+  renderAuditReport();
 }
 
 function exportData(){alert("JSON export has been removed. The system now uses the live Google database.");}
