@@ -1,15 +1,11 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARK 5S Management System</title>
-<!-- html2pdf.js CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<!-- QRCode.js CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- JsBarcode CDN -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <style>
-body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb;margin-bottom:12px}
-#control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+body{font-family:Arial;margin:0;background:#f4f6f8;color:#222}header{background:#123b5d;color:#fff;padding:18px}nav{background:#fff;padding:10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #ddd}button{padding:9px 12px;border:0;border-radius:6px;background:#123b5d;color:white;cursor:pointer}.page{display:none;padding:20px;max-width:1400px;margin:auto}.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card,.panel{background:#fff;padding:16px;border:1px solid #ddd;border-radius:9px;margin:12px 0}.card b{font-size:28px;display:block;margin-top:7px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}th{background:#eef2f5}.panel{overflow:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}input,select,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #bbb;border-radius:5px;box-sizing:border-box}textarea{min-height:70px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.box{background:#fff;padding:20px;border-radius:10px;width:min(850px,100%);max-height:90vh;overflow:auto}.badge{padding:4px 8px;border-radius:12px;background:#e5e7eb}.ok{background:#dcfce7}.bad{background:#fee2e2}.notice{padding:12px;background:#eff6ff;border-left:4px solid #2563eb}
+</style>
+<style>
+#control .card{background:#fff;padding:18px;border-radius:10px;margin:10px 0;box-shadow:0 2px 8px #0001}
 #control .card h3{margin-top:0;color:#123b5d}
 #control input{padding:8px;margin:4px 4px 4px 0}
 .control-list{margin-top:10px;max-height:220px;overflow:auto}
@@ -18,87 +14,34 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 .tagbadge{padding:4px 8px;border-radius:12px;font-size:12px;font-weight:bold}
 .tagopen{background:#fee2e2;color:#991b1b}
 .tagresolved{background:#dcfce7;color:#166534}
-
-/* UNIFIED LABEL STYLES */
-.lbl-sheet { display: flex; flex-wrap: wrap; gap: 15px; padding: 15px; background: #eef2f5; border-radius: 8px; justify-content: center; }
-.lbl-card { background: #fff; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; position: relative; overflow: hidden; color: #111; font-family: Arial, sans-serif; padding: 12px; width: 340px; }
-.lbl-header { display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #0056b3; padding-bottom: 6px; margin-bottom: 10px; font-weight: bold; font-size: 14px; color: #0056b3; }
-.lbl-body { display: flex; justify-content: space-between; align-items: center; }
-.lbl-details { font-size: 12px; line-height: 1.7; color: #000; }
-.lbl-details b { color: #000; font-weight: bold; }
-.lbl-details span { color: #0056b3; font-weight: bold; }
-.lbl-qr-box { text-align: center; }
-.lbl-qr-box .qr-sub { font-size: 8px; color: #555; margin-top: 4px; font-weight: bold; }
-
-/* Item Image Styles */
-.item-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
-
-.modal{z-index:60}
-#scanView{display:none;position:fixed;inset:0;z-index:40;background:#f4f6f8;overflow:auto}
-.sv-head{background:#123b5d;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.sv-head button{padding:6px 10px;margin-left:8px;background:#fff;color:#123b5d}
-.sv-body{max-width:900px;margin:0 auto;padding:14px}
-.sv-card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:16px;margin-bottom:12px;overflow:auto}
-.sv-title{display:flex;gap:14px;align-items:center}.sv-title h2{margin:0 0 4px}
-.sv-photo{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #ccc}
-.sv-sub{color:#555;font-size:14px}
-.sv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 16px;margin-top:14px}
-.sv-kv span{display:block;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}.sv-kv b{font-size:15px;word-break:break-word}
-.sv-actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
-.sv-card table{min-width:0}.sv-card h3{margin:0 0 8px}
-.sv-red{border-left:6px solid #e31b23}
 </style>
 </head><body>
-<header><h1 id="sysHeaderTitle">PARK 5S System</h1><div id="sysHeaderSub">5S • Rooms • Assets • Maintenance • Location Control</div></header>
+<header><h1>PARK 5S System</h1><div>5S • Rooms • Assets • Maintenance • Location Control</div></header>
 <nav id="nav"></nav><main>
 <section id="dashboard" class="page active"><h2>Management Dashboard</h2><div id="cards" class="cards"></div><div class="panel"><h3>Department Status</h3><table><thead><tr><th>Department</th><th>Rooms</th><th>Assets</th><th>Missing</th><th>Repair</th><th>5S</th></tr></thead><tbody id="dept"></tbody></table></div></section>
-
-<section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th>Actions</th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
-
-<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Photo</th><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
+<section id="rooms" class="page"><h2>Buildings / Floors / Departments / Rooms</h2><div class="notice">New buildings and rooms can be added whenever the hospital expands.</div><button onclick="roomForm()">+ Add Room</button><div class="panel"><table><thead><tr><th>Building</th><th>Floor</th><th>Department</th><th>Room</th><th>Responsible</th><th>Status</th><th></th></tr></thead><tbody id="roomsT"></tbody></table></div></section>
+<section id="assets" class="page"><h2>Asset, Equipment & Small Item Register</h2><button onclick="assetForm()">+ Add Item</button><div class="panel"><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item</th><th>Dept</th><th>Room</th><th>Condition</th><th>Purchase</th><th>Value</th><th>Status</th><th></th></tr></thead><tbody id="assetsT"></tbody></table></div></section>
 <section id="location" class="page"><h2>Expected vs Actual Location Control</h2><div class="notice">Use this area to identify missing, transferred or unregistered items.</div><div class="panel"><table><thead><tr><th>Room</th><th>Item</th><th>Expected</th><th>Actual</th><th>Result</th><th>Action</th></tr></thead><tbody id="locT"></tbody></table></div></section>
 <section id="maintenance" class="page"><h2>Maintenance Control</h2><div id="mcards" class="cards"></div><div class="panel"><button onclick="maintForm()">+ Record Maintenance</button><table><thead><tr><th>Asset</th><th>ID</th><th>Last</th><th>Next Due</th><th>Provider</th><th>Cost</th></tr></thead><tbody id="maintT"></tbody></table></div></section>
 <section id="audit" class="page"><h2>5S Audit</h2><button onclick="auditForm()">+ Conduct Audit</button><div class="panel"><table><thead><tr><th>Date</th><th>Dept</th><th>Room</th><th>Auditor</th><th>Sort</th><th>Order</th><th>Shine</th><th>Standardize</th><th>Sustain</th><th>Total</th></tr></thead><tbody id="auditT"></tbody></table></div></section>
-<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th><th id="actionsDelTh"></th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
+<section id="actions" class="page"><h2>Corrective Actions / Missing Items</h2><div class="panel"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Location</th><th>Finding</th><th>Status</th></tr></thead><tbody id="actionsT"></tbody></table></div></section>
 
 <section id="redtag" class="page"><h2>🔴 Red Tag System</h2>
 <div class="notice">Used during 5S Sort activities to flag items that are unnecessary, misplaced, damaged, or of unclear ownership. Tagged items move to a holding area until a disposition decision is made.</div>
-<div class="panel">
-  <h3>Red Tag Template Preview</h3>
-  <div id="redtagTemplatePreview"></div>
-</div>
 <button onclick="redTagForm()" class="redbtn">+ New Red Tag</button> <button onclick="printRedTagList()">Print Red Tag List</button>
-<div class="panel"><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Linked Asset</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="redtagT"></tbody></table></div>
+<div class="panel"><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Linked Asset</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th><th></th></tr></thead><tbody id="redtagT"></tbody></table></div>
 </section>
-
-<section id="labels" class="page"><h2>🏷️ Label Printing Center</h2>
-<div class="notice">Select items or rooms below to print standardized barcodes/QR labels.</div>
-<div class="panel">
-  <h3>Select Source to Print</h3>
-  <div style="display:flex; gap:15px; margin-bottom:12px;">
-     <label style="font-weight:bold"><input type="radio" name="lblSource" value="assets" checked onchange="renderLabelsTab()"> Registered Assets / Items</label>
-     <label style="font-weight:bold"><input type="radio" name="lblSource" value="rooms" onchange="renderLabelsTab()"> Rooms / Doors</label>
-  </div>
-  <div style="display:flex; gap:10px; margin-bottom:12px;">
-     <button onclick="selectAllLabels(true)">Select All</button>
-     <button onclick="selectAllLabels(false)">Deselect All</button>
-     <button onclick="printSelectedLabels()" style="background:#166534">🖨️ Print Selected Labels</button>
-  </div>
-  <table>
-     <thead><tr id="lblTabHead"></tr></thead>
-     <tbody id="lblTabBody"></tbody>
-  </table>
-</div>
-</section>
-
-<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="window.print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
+<section id="reports" class="page"><h2>Reports</h2><div class="panel"><h3>Room Contents Report</h3><p>Select a room to list every registered item currently assigned to it.</p><div class="grid"><label>Room<select id="reportRoom" onchange="renderRoomReport()"></select></label></div><br><button onclick="printRoomReport()">Print / Save PDF</button> <button onclick="downloadRoomReport()">Download CSV</button><div id="roomReport" class="panel"></div></div><div id="adminReportTools"><button onclick="exportData()">Export JSON</button> <button onclick="print()">Print / Save PDF</button><div class="panel"><pre id="summary"></pre></div></div></section>
 
 <section id="users" class="page"><h2>User Management</h2><div class="notice">Only administrators can create accounts, change a user's role, or set their status.</div><button onclick="userForm()">+ Add User</button><div class="panel"><table><thead><tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersT"></tbody></table></div></section>
 <section id="activity" class="page"><h2>Activity Log</h2><div class="notice">Shows the signed-in user responsible for protected actions.</div><div class="panel"><table><thead><tr><th>Date & time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody id="activityT"></tbody></table></div></section>
 
 <section id="control" class="page">
 <h2>⚙ Control Panel</h2>
-<div class="notice"><b>Administrator Development Area</b><br>Use this section for small system/configuration changes. Viewer accounts cannot access it.</div>
+<div class="notice"><b>Administrator Development Area</b><br>
+Use this section for small system/configuration changes. Viewer accounts cannot access it.
+</div>
+
 <div class="grid">
 <div class="card">
 <h3>System Settings</h3>
@@ -107,482 +50,81 @@ body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}header{
 <label>Currency<input id="cpCurrency"></label><br>
 <button onclick="cpSaveSettings()">Save Settings</button>
 </div>
+
 <div class="card">
 <h3>Departments</h3>
 <input id="cpDept" placeholder="New department">
 <button onclick="cpAdd('departments','cpDept')">Add</button>
 <div id="cpDeptList" class="control-list"></div>
 </div>
+
 <div class="card">
 <h3>Asset Statuses</h3>
 <input id="cpStatus" placeholder="New status">
 <button onclick="cpAdd('statuses','cpStatus')">Add</button>
 <div id="cpStatusList" class="control-list"></div>
 </div>
+
 <div class="card">
 <h3>Equipment Conditions</h3>
 <input id="cpCondition" placeholder="New condition">
 <button onclick="cpAdd('conditions','cpCondition')">Add</button>
 <div id="cpConditionList" class="control-list"></div>
 </div>
+
 <div class="card">
 <h3>5S Audit Criteria</h3>
 <input id="cpCriterion" placeholder="New criterion">
 <button onclick="cpAdd('criteria','cpCriterion')">Add</button>
 <div id="cpCriterionList" class="control-list"></div>
 </div>
+
 <div class="card">
-<h3>Live Database</h3>
-<p style="font-size:12px;color:#666">This system is connected to the central Google Sheet database.</p><p style="font-size:12px"><a href="https://docs.google.com/spreadsheets/d/1CYWaepdS4Q27JXID6wEQjTA7dPgRb_7nTaiZwfQhibw/edit" target="_blank" rel="noopener">Open Google Sheet</a></p>
-<span id="liveDbStatus" class="badge">Connecting...</span>
-<br><br>
-<button onclick="syncFromServer()">Refresh Live Data</button>
-<button onclick="openRestoreJson()" style="background:#166534">Restore / Merge JSON</button>
-<button onclick="exportFullJson()" style="background:#6b21a8">Export Full JSON</button>
+<h3>Backup & Restore</h3>
+<button onclick="cpBackup()">Download Full Backup</button>
+<button onclick="document.getElementById('cpRestore').click()">Restore Backup</button>
+<input id="cpRestore" type="file" accept=".json" style="display:none" onchange="cpRestoreBackup(event)">
 <button onclick="cpResetConfig()" style="background:#b91c1c">Reset Configuration</button>
 <p style="font-size:12px;color:#666">Resetting configuration does not delete rooms/assets.</p>
 </div>
 </div>
 </section>
-</main>
-<div id="modal" class="modal"><div id="box" class="box"></div></div>
-
+</main><div id="modal" class="modal"><div id="box" class="box"></div></div>
 <script>
-const BASE_SYSTEM_URL = "https://mendispark-pixel.github.io/Parkmendis/";
-// Google Apps Script Web App URL.
-// After deploying Code.gs, paste the Web App URL here.
-const GOOGLE_SHEET_ID = "1CYWaepdS4Q27JXID6wEQjTA7dPgRb_7nTaiZwfQhibw";
-const GOOGLE_DB_API = "https://script.google.com/macros/s/AKfycbxP7M9N93Vtwu5nCbPgkAg1KHH9c8ZoByUZv4z5yOzqb1SaqlPYmkshYnWVqst4UmID/exec";
-const LIVE_DB_ENABLED = !GOOGLE_DB_API.includes("PASTE_YOUR_");
+const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"];
+let db=JSON.parse(localStorage.getItem("park5s")||"null")||{rooms:[
+{id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
+{id:2,building:"Main Building",floor:"Ground Floor",dept:"OPD",room:"Consultation Room 01",person:"OPD In-Charge",status:"Active"}],
+assets:[
+{id:"PH-OPD-EB-001",name:"Examination Bed",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[]},
+{id:"PH-OPD-BP-004",name:"BP Monitor",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2025-03-05",value:35000,status:"Active",last:"2026-07-05",next:"2027-01-05",history:[]}],
+audits:[],actions:[],maintenance:[],redtags:[]};
 
-const DEPTS=["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown","IT"]; // fallback; UI should prefer cpConfig().departments
+function save(){localStorage.setItem("park5s",JSON.stringify(db));render()}
+function close(){modal.style.display="none"}
+function open(x){box.innerHTML=x;modal.style.display="flex"}
+function go(id){let signedIn=typeof sessionUser==="function"&&sessionUser(),admin=typeof isAdmin==="function"&&isAdmin();if(signedIn&&!admin&&typeof canAccess==="function"&&!canAccess(id)){alert("Your administrator has not given your account access to this option.");return}if(["control","users","activity"].includes(id)&&!admin){alert("Administrator access required.");if(typeof showLogin==="function")showLogin();return}document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");render()}
+nav.innerHTML=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"],["control","Control Panel"]].map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("");
 
-let db = null;
-try {
-  db = JSON.parse(localStorage.getItem("park5s"));
-} catch(e) {}
+function roomForm(r){open(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid>
+<label>Building<input id=rb value="${r?.building||""}"></label><label>Floor<input id=rf value="${r?.floor||""}"></label>
+<label>Department<select id=rd>${DEPTS.map(d=>`<option ${d==(r?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+<label>Room / Area<input id=rr value="${r?.room||""}"></label><label>Responsible Person<input id=rp value="${r?.person||""}"></label></div>
+<button onclick="saveRoom(${r?.id||0})">Save</button> <button onclick=close()>Cancel</button>`)}
+function saveRoom(id){let o={id:id||Date.now(),building:rb.value,floor:rf.value,dept:rd.value,room:rr.value,person:rp.value,status:"Active"};let i=db.rooms.findIndex(x=>x.id==id);i>=0?db.rooms[i]=o:db.rooms.push(o);close();save()}
 
-if (!db || !Array.isArray(db.rooms) || !Array.isArray(db.assets)) {
-  db = {
-    rooms: [
-      {id:1,building:"Main Building",floor:"Ground Floor",dept:"Reception",room:"Reception Area",person:"Reception In-Charge",status:"Active"},
-      {id:2,building:"PH",floor:"2nd Floor",dept:"Ward",room:"243",person:"Ward In-Charge",status:"Active"}
-    ],
-    assets: [
-      {id:"PH-OPD-EB-001",name:"Examination Bed",type:"Equipment",dept:"OPD",room:"Consultation Room 01",condition:"Good",purchase:"2024-05-12",value:250000,status:"Active",last:"2026-08-10",next:"2026-11-10",history:[],photo:""},
-      {id:"EQ-001",name:"Ultrasound Machine",type:"Machine",dept:"Radiology (OPD)",room:"243",condition:"Good",purchase:"2025-01-10",value:1200000,status:"Active",last:"2026-06-01",next:"2026-12-01",history:[],photo:""},
-      {id:"IT-0456",name:"Ball Pen",type:"Small Item",dept:"Reception",room:"Reception Area",condition:"Good",purchase:"2026-01-01",value:50,status:"Active",last:"",next:"",history:[],photo:""},
-      {id:"WAR-243-FUR-001",name:"Bedside Locker",type:"Furniture",dept:"Ward",room:"243",condition:"Good",purchase:"2025-05-15",value:450000,status:"Active",last:"2026-07-10",next:"2027-01-10",history:[],photo:""}
-    ],
-    audits: [],
-    actions: [],
-    maintenance: [],
-    redtags: [],
-    users: [],
-    activity: []
-  };
-}
-
-let liveSaveTimer = null;
-let liveSaveBusy = false;
-let liveSavePending = false;
-
-function setLiveDbStatus(text, good=true){
-  const el=document.getElementById("liveDbStatus");
-  if(el){
-    el.textContent=text;
-    el.className="badge "+(good?"ok":"bad");
-  }
-}
-
-function localCacheSave(){
-  // Temporary browser cache only. The central database is Google Sheets.
-  try{
-    localStorage.setItem("park5s",JSON.stringify(db));
-    localStorage.setItem("park5sConfig",JSON.stringify(cpConfig()));
-  }catch(e){}
-}
-
-
-function normaliseDatabaseShape(source){
-  const d = (source && typeof source === "object") ? source : {};
-  const arrays = ["rooms","assets","audits","actions","maintenance","redtags","users","activity"];
-  arrays.forEach(k => { if(!Array.isArray(d[k])) d[k]=[]; });
-  return d;
-}
-
-function recordKey(collection, record){
-  if(!record || typeof record !== "object") return "";
-  if(collection === "assets" && record.id) return String(record.id);
-  if(collection === "rooms" && record.id !== undefined) return String(record.id);
-  if(collection === "users" && (record.id || record.username)) return String(record.id || record.username);
-  if(collection === "redtags" && record.id) return String(record.id);
-
-  // For historical/event collections without a guaranteed ID, create a stable
-  // key from their meaningful fields so restoring the same JSON twice does not
-  // create duplicates.
-  const copy = JSON.parse(JSON.stringify(record));
-  delete copy.__mergeKey;
-  delete copy.restoredAt;
-  delete copy.updatedAt;
-  return JSON.stringify(copy);
-}
-
-function mergeRecordArrays(existing, incoming, collection){
-  const result = Array.isArray(existing) ? existing.map(x => JSON.parse(JSON.stringify(x))) : [];
-  const index = new Map();
-
-  result.forEach((item, i) => {
-    const key = recordKey(collection, item);
-    if(key) index.set(key, i);
-  });
-
-  (Array.isArray(incoming) ? incoming : []).forEach(item => {
-    if(!item || typeof item !== "object") return;
-    const copy = JSON.parse(JSON.stringify(item));
-    const key = recordKey(collection, copy);
-    if(!key) return;
-
-    if(index.has(key)){
-      // Update the matching record only. Nothing else in the array is removed.
-      result[index.get(key)] = Object.assign({}, result[index.get(key)], copy);
-    }else{
-      result.push(copy);
-      index.set(key, result.length - 1);
-    }
-  });
-
-  return result;
-}
-
-function mergeDatabase(existing, incoming){
-  const a = normaliseDatabaseShape(existing);
-  const b = normaliseDatabaseShape(incoming);
-  const merged = {};
-  const collections = ["rooms","assets","audits","actions","maintenance","redtags","users","activity"];
-
-  collections.forEach(name => {
-    merged[name] = mergeRecordArrays(a[name], b[name], name);
-  });
-
-  // Preserve any future/non-standard properties already in the database.
-  Object.keys(a).forEach(k => {
-    if(!(k in merged)) merged[k] = a[k];
-  });
-  Object.keys(b).forEach(k => {
-    if(!(k in merged) && !(k in a)) merged[k] = b[k];
-  });
-
-  return merged;
-}
-
-function mergeConfig(existing, incoming){
-  const base = (existing && typeof existing === "object") ? JSON.parse(JSON.stringify(existing)) : {};
-  const add  = (incoming && typeof incoming === "object") ? incoming : {};
-  const merged = Object.assign({}, base);
-
-  Object.keys(add).forEach(k => {
-    if(Array.isArray(add[k])){
-      const old = Array.isArray(base[k]) ? base[k] : [];
-      const values = [...old];
-      add[k].forEach(v => {
-        if(!values.some(x => JSON.stringify(x) === JSON.stringify(v))) values.push(v);
-      });
-      merged[k] = values;
-    }else if(add[k] && typeof add[k] === "object"){
-      merged[k] = Object.assign({}, base[k] || {}, add[k]);
-    }else{
-      merged[k] = add[k];
-    }
-  });
-
-  return merged;
-}
-
-function buildPayload(databaseOverride, configOverride){
-  return {
-    action: "merge",
-    database: databaseOverride || db,
-    config: configOverride || cpConfig(),
-    savedAt: new Date().toISOString(),
-    client: {
-      version: "merge-safe-v1",
-      url: location.href
-    }
-  };
-}
-
-async function saveToLiveDatabase(){
-  if(!LIVE_DB_ENABLED){
-    setLiveDbStatus("Google database not configured", false);
-    return false;
-  }
-
-  // Never drop a change made while another request is still saving.
-  if(liveSaveBusy){
-    liveSavePending = true;
-    return true;
-  }
-
-  liveSaveBusy=true;
-  liveSavePending=false;
-  setLiveDbStatus("Saving...", true);
-
-  try{
-    const payload=buildPayload(db, cpConfig());
-    payload.sheetId = GOOGLE_SHEET_ID;
-
-    const response=await fetch(GOOGLE_DB_API,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload),
-      cache:"no-store"
-    });
-
-    const text=await response.text();
-    let result;
-    try{ result=JSON.parse(text); }
-    catch(_){ throw new Error("Google Apps Script returned a non-JSON response: "+text.slice(0,180)); }
-
-    if(!response.ok || !result.ok) throw new Error(result.error||("HTTP "+response.status));
-
-    if(result.database) db=normaliseDatabaseShape(result.database);
-    if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
-
-    localCacheSave();
-    render();
-    setLiveDbStatus(
-      `Google Sheet saved${result.added||result.updated ? `: ${result.added||0} added / ${result.updated||0} updated` : ""}`,
-      true
-    );
-    return true;
-  }catch(e){
-    console.error(e);
-    setLiveDbStatus("Save failed - check Apps Script deployment", false);
-    alert("The central Google Sheet could not be updated.\n\n"+e.message);
-    return false;
-  }finally{
-    liveSaveBusy=false;
-    if(liveSavePending){
-      liveSavePending=false;
-      setTimeout(()=>saveToLiveDatabase(),50);
-    }
-  }
-}
-
-function save(){
-  localCacheSave();
-  render();
-  clearTimeout(liveSaveTimer);
-  liveSaveTimer=setTimeout(()=>saveToLiveDatabase(),150);
-}
-
-async function syncFromServer(){
-  if(!LIVE_DB_ENABLED){
-    alert("First deploy Code.gs as a Google Apps Script Web App and paste its Web App URL into index.html.");
-    return;
-  }
-
-  try{
-    setLiveDbStatus("Loading...", true);
-    const url=GOOGLE_DB_API+"?action=load&sheetId="+encodeURIComponent(GOOGLE_SHEET_ID)+"&t="+Date.now();
-    const response=await fetch(url,{cache:"no-store"});
-    const text=await response.text();
-    let result;
-    try{ result=JSON.parse(text); }
-    catch(_){ throw new Error("Google Apps Script returned a non-JSON response: "+text.slice(0,180)); }
-    if(!response.ok || !result.ok) throw new Error(result.error||("HTTP "+response.status));
-
-    if(result.database) db=normaliseDatabaseShape(result.database);
-    if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
-
-    // Ensure a brand-new/empty sheet still has usable default users and arrays,
-    // then persist those defaults to the sheet.
-    securitySetup();
-    localCacheSave();
-    cpRender();
-    render();
-    setLiveDbStatus("Live Google Sheet connected", true);
-
-    if(result.isEmpty) saveToLiveDatabase();
-  }catch(e){
-    console.error(e);
-    setLiveDbStatus("Connection failed", false);
-    alert("Could not load the central Google Sheet.\n\n"+e.message);
-  }
-}
-
-function openRestoreJson(){
-  if(!requireAdmin()) return;
-
-  openModal(`
-    <h2>Restore / Merge JSON</h2>
-    <div class="notice">
-      <b>Safe merge mode:</b> existing Google Sheet records are not deleted.
-      Matching records are updated; new records are added. Unrelated records remain unchanged.
-    </div>
-    <label>JSON Backup File
-      <input id="restoreJsonFile" type="file" accept=".json,application/json">
-    </label>
-    <br>
-    <label style="display:flex;align-items:center;gap:8px">
-      <input id="restorePreviewOnly" type="checkbox" style="width:auto">
-      Preview only — do not save
-    </label>
-    <br>
-    <button onclick="restoreJsonFile()">Restore / Merge</button>
-    <button onclick="close()">Cancel</button>
-    <div id="restoreResult" class="panel" style="margin-top:12px"></div>
-  `);
-}
-
-function mergeStats(before, after){
-  const collections=["rooms","assets","audits","actions","maintenance","redtags","users","activity"];
-  const stats={};
-  collections.forEach(k=>{
-    const b=Array.isArray(before?.[k])?before[k]:[];
-    const a=Array.isArray(after?.[k])?after[k]:[];
-    const bkeys=new Set(b.map(x=>recordKey(k,x)).filter(Boolean));
-    const akeys=new Set(a.map(x=>recordKey(k,x)).filter(Boolean));
-    let added=0, updated=0;
-    a.forEach(x=>{
-      const key=recordKey(k,x);
-      if(!key) return;
-      if(bkeys.has(key)) updated++; else if(akeys.has(key)) added++;
-    });
-    stats[k]={before:b.length,after:a.length,added,updated};
-  });
-  return stats;
-}
-
-async function restoreJsonFile(){
-  if(!requireAdmin()) return;
-
-  const file=document.getElementById("restoreJsonFile")?.files?.[0];
-  const output=document.getElementById("restoreResult");
-  if(!file){ alert("Please select a JSON file."); return; }
-
-  try{
-    const text=await file.text();
-    const parsed=JSON.parse(text);
-
-    const incomingDb=parsed.database || parsed.db || parsed.data || parsed;
-    const incomingConfig=parsed.config || parsed.configuration || null;
-
-    if(!incomingDb || typeof incomingDb!=="object"){
-      throw new Error("The JSON file does not contain a valid database object.");
-    }
-
-    const mergedDb=mergeDatabase(db,incomingDb);
-    const mergedConfig=incomingConfig ? mergeConfig(cpConfig(),incomingConfig) : cpConfig();
-    const stats=mergeStats(db,mergedDb);
-
-    output.innerHTML=`
-      <h3>Merge Preview</h3>
-      ${Object.entries(stats).map(([k,v])=>
-        `<div><b>${safe(k)}</b>: ${v.before} existing → ${v.after} total
-        (${v.added} new, ${v.updated} matched/updated)</div>`
-      ).join("")}
-      <p><b>No delete operation is performed by this restore.</b></p>
-    `;
-
-    if(document.getElementById("restorePreviewOnly")?.checked) return;
-
-    db=mergedDb;
-    localStorage.setItem("park5sConfig",JSON.stringify(mergedConfig));
-    localCacheSave();
-    render();
-    close();
-
-    if(!LIVE_DB_ENABLED){
-      alert("Restore merged locally, but Google Sheets is not configured.");
-      return;
-    }
-
-    setLiveDbStatus("Uploading merged restore...", true);
-    const response=await fetch(GOOGLE_DB_API,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(Object.assign(buildPayload(db,mergedConfig),{sheetId:GOOGLE_SHEET_ID}))
-    });
-    const result=await response.json();
-    if(!result.ok) throw new Error(result.error||"Google Sheet merge failed");
-
-    if(result.database) db=normaliseDatabaseShape(result.database);
-    if(result.config) localStorage.setItem("park5sConfig",JSON.stringify(result.config));
-
-    localCacheSave();
-    cpRender();
-    render();
-    setLiveDbStatus("JSON restored and merged into Google Sheets",true);
-    alert("JSON restore completed.\n\nExisting records were not deleted.");
-  }catch(e){
-    console.error(e);
-    if(output) output.innerHTML=`<span class="bad badge">Restore failed: ${safe(e.message)}</span>`;
-    else alert("Restore failed: "+e.message);
-  }
-}
-
-function exportFullJson(){
-  if(!requireAdmin()) return;
-  const payload={
-    database:db,
-    config:cpConfig(),
-    exportedAt:new Date().toISOString(),
-    formatVersion:1
-  };
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="PARK5S_Full_Backup_"+new Date().toISOString().slice(0,10)+".json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function close(){document.getElementById("modal").style.display="none"}
-function openModal(x){document.getElementById("box").innerHTML=x;document.getElementById("modal").style.display="flex"}
-
-function go(id){
-  let signedIn=typeof sessionUser==="function"&&sessionUser(),admin=typeof isAdmin==="function"&&isAdmin();
-  if(signedIn&&!admin&&typeof canAccess==="function"&&!canAccess(id)){alert("Your administrator has not given your account access to this option.");return}
-  if(["control","users","activity"].includes(id)&&!admin){alert("Administrator access required.");if(typeof showLogin==="function")showLogin();return}
-  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  render();
-}
-
-function roomForm(r){
-  openModal(`<h2>${r?"Edit":"Add"} Room</h2><div class=grid>
-  <label>Building<input id=rb value="${r?.building||""}"></label><label>Floor<input id=rf value="${r?.floor||""}"></label>
-  <label>Department<select id=rd>${configuredDepartments().map(d=>`<option ${d==(r?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
-  <label>Room / Area<input id=rr value="${r?.room||""}"></label><label>Responsible Person<input id=rp value="${r?.person||""}"></label></div>
-  <br><button onclick="saveRoom(${r?.id||0})">Save</button> <button onclick=close()>Cancel</button>`);
-}
-function saveRoom(id){
-  let o={id:id||Date.now(),building:rb.value,floor:rf.value,dept:rd.value,room:rr.value,person:rp.value,status:"Active"};
-  let i=db.rooms.findIndex(x=>x.id==id);
-  i>=0?db.rooms[i]=o:db.rooms.push(o);
-  close();save();
-}
-
-function assetForm(a){
-  openModal(`<h2>${a?"Edit":"Add"} Machine, Equipment or Small Item</h2><div class=grid>
-  <label>Identification Code<input id=ai value="${a?.id||""}" placeholder="Generated from room and type"></label>
-  <label>Item Type<select id=at>${["Machine","Equipment","Small Item","Tool","Furniture","Other"].map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}</select></label>
-  <label>Item / Equipment<input id=an value="${a?.name||""}"></label>
-  <label>Department<select id=ad>${configuredDepartments().map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
-  <label>Room<select id=ar>${db.rooms.map(r=>`<option ${r.room==(a?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
-  <label>Condition<select id=ac>${["Excellent","Good","Fair","Needs Repair","Beyond Repair"].map(s=>`<option ${s==(a?.condition||"Good")?"selected":""}>${s}</option>`).join("")}</select></label>
-  <label>Purchase Date<input id=ap type=date value="${a?.purchase||""}"></label>
-  <label>Value (Rs.)<input id=av type=number value="${a?.value||""}"></label>
-  <label>Status<select id=as>${["Active","In Use","In Storage","Under Maintenance","Missing","Red Tagged","Transferred","Replaced","Disposed"].map(s=>`<option ${s==(a?.status||"Active")?"selected":""}>${s}</option>`).join("")}</select></label>
-  <label>Last Maintenance<input id=al type=date value="${a?.last||""}"></label>
-  <label>Next Maintenance Due<input id=nx type=date value="${a?.next||""}"></label>
-  <label>Photo<input id=photo type=file accept=image/*></label></div><br>
-  <button onclick="fillSuggestedAssetCode()">Generate Identification Code</button> <button onclick="saveAsset('${a?.id||""}')">Save</button> <button onclick=close()>Cancel</button>`);
-}
-
+function assetForm(a){open(`<h2>${a?"Edit":"Add"} Machine, Equipment or Small Item</h2><div class=grid>
+<label>Identification Code<input id=ai value="${a?.id||""}" placeholder="Generated from room and type"></label><label>Item Type<select id=at>${["Machine","Equipment","Small Item","Tool","Furniture","Other"].map(t=>`<option ${t==(a?.type||"Equipment")?"selected":""}>${t}</option>`).join("")}</select></label><label>Item / Equipment<input id=an value="${a?.name||""}"></label>
+<label>Department<select id=ad>${DEPTS.map(d=>`<option ${d==(a?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+<label>Room<select id=ar>${db.rooms.map(r=>`<option ${r.room==(a?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
+<label>Condition<select id=ac>${["Excellent","Good","Fair","Needs Repair","Beyond Repair"].map(s=>`<option ${s==(a?.condition||"Good")?"selected":""}>${s}</option>`).join("")}</select></label>
+<label>Purchase Date<input id=ap type=date value="${a?.purchase||""}"></label><label>Value (Rs.)<input id=av type=number value="${a?.value||""}"></label>
+<label>Status<select id=as>${["Active","In Use","In Storage","Under Maintenance","Missing","Red Tagged","Transferred","Replaced","Disposed"].map(s=>`<option ${s==(a?.status||"Active")?"selected":""}>${s}</option>`).join("")}</select></label>
+<label>Last Maintenance<input id=al type=date value="${a?.last||""}"></label><label>Next Maintenance Due<input id=nx type=date value="${a?.next||""}"></label>
+<label>Photo<input id=photo type=file accept=image/*></label></div><br>
+<button onclick="fillSuggestedAssetCode()">Generate Identification Code</button> <button onclick="saveAsset('${a?.id||""}')">Save</button> <button onclick=close()>Cancel</button>`)}
 function codePart(value,length){return String(value||"").replace(/[^a-z0-9]/gi,"").toUpperCase().slice(0,length)||"GEN"}
+
 function suggestedAssetCode(){
     let room=db.rooms.find(r=>r.room===ar.value);
     let roomPart=codePart(room?.room||ar.value,4);
@@ -618,19 +160,19 @@ function saveAsset(old){
     }else done(photo0);
 }
 
-function move(id){let a=db.assets.find(x=>x.id==id);openModal(`<h2>Transfer Item</h2><p><b>${a.name}</b> (${a.id})</p><label>New Room<select id=nr>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Reason<textarea id=reason></textarea></label><button onclick="doMove('${id}')">Record Transfer</button> <button onclick=close()>Cancel</button>`)}
+function move(id){let a=db.assets.find(x=>x.id==id);open(`<h2>Transfer Item</h2><p><b>${a.name}</b> (${a.id})</p><label>New Room<select id=nr>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Reason<textarea id=reason></textarea></label><button onclick="doMove('${id}')">Record Transfer</button> <button onclick=close()>Cancel</button>`)}
 function doMove(id){let a=db.assets.find(x=>x.id==id),from=a.room;a.room=nr.value;a.status="Active";a.history.push({date:new Date().toISOString().slice(0,10),event:"Moved",from:from,to:a.room,reason:reason.value});close();save()}
 function missing(id){let a=db.assets.find(x=>x.id==id);a.status="Missing";db.actions.push({date:new Date().toISOString().slice(0,10),type:"Missing Item",item:a.name,location:a.room,finding:"Expected item not found during physical verification.",status:"Open"});save()}
 
-/* RED TAG SYSTEM */
+/* ===================== RED TAG SYSTEM ===================== */
 const RED_TAG_REASONS=["Not Needed","Wrong Location","Unknown Owner","Damaged / Beyond Repair","Excess Quantity","Expired","Other"];
 const RED_TAG_DISPOSITIONS=["Returned to Service","Relocated","Transferred to Another Dept","Repaired","Sold","Donated","Disposed / Scrapped"];
 function nextTagNumber(){let n=(db.redtags?.length||0)+1;return "RT-"+new Date().getFullYear()+"-"+String(n).padStart(4,"0")}
 function redTagForm(asset){
- openModal(`<h2>🔴 New Red Tag</h2><div class=grid>
+ open(`<h2>🔴 New Red Tag</h2><div class=grid>
  <label>Linked Asset (optional)<select id=rtAsset onchange="rtAssetPick()"><option value="">— Not a registered asset —</option>${db.assets.map(a=>`<option value="${a.id}" ${asset&&asset.id===a.id?"selected":""}>${a.id} — ${a.name}</option>`).join("")}</select></label>
  <label>Item Description<input id=rtItem value="${asset?safe(asset.name):""}" placeholder="Item name if not a registered asset"></label>
- <label>Department<select id=rtDept>${configuredDepartments().map(d=>`<option ${d==(asset?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
+ <label>Department<select id=rtDept>${DEPTS.map(d=>`<option ${d==(asset?.dept||"")?"selected":""}>${d}</option>`).join("")}</select></label>
  <label>Room / Location<select id=rtRoom>${db.rooms.map(r=>`<option ${r.room==(asset?.room||"")?"selected":""}>${r.room}</option>`).join("")}</select></label>
  <label>Reason<select id=rtReason>${RED_TAG_REASONS.map(r=>`<option>${r}</option>`).join("")}</select></label>
  <label>Tagged By<input id=rtBy value="${safe(sessionUser()?.name||"")}"></label>
@@ -654,19 +196,11 @@ function saveRedTag(){
  db.actions.push({date:tag.date,type:"Red Tag",item:tag.item,location:tag.room,finding:"Red tagged — "+tag.reason+(tag.note?": "+tag.note:""),status:"Open"});
  close();
  save();
-}
-
-function deleteAction(i){
- if(!requireAdmin())return;
- let a=db.actions[i];if(!a)return;
- if(!confirm("Remove this record from Corrective Actions / Missing Items?\n\n"+a.type+" — "+a.item+" ("+a.date+")"))return;
- db.actions.splice(i,1);
- logActivity("Action removed",a.type+" — "+a.item+" ("+a.date+")");
- save();
+ printRedTag(tag.id);
 }
 function resolveRedTagForm(id){
  let t=db.redtags.find(x=>x.id===id);if(!t)return;
- openModal(`<h2>Resolve Red Tag ${safe(t.id)}</h2><p><b>${safe(t.item)}</b> — ${safe(t.room)} (${safe(t.dept)})</p>
+ open(`<h2>Resolve Red Tag ${safe(t.id)}</h2><p><b>${safe(t.item)}</b> — ${safe(t.room)} (${safe(t.dept)})</p>
  <div class=grid>
  <label>Disposition<select id=rdDisp>${RED_TAG_DISPOSITIONS.map(d=>`<option ${d===t.disposition?"selected":""}>${d}</option>`).join("")}</select></label>
  <label>Date<input id=rdDate type=date value="${new Date().toISOString().slice(0,10)}"></label>
@@ -684,334 +218,91 @@ function resolveRedTag(id){
  close();
  save();
 }
-
-/* UNIFIED LABEL GENERATION LOGIC */
-function generateLabelHTML(item, isRoom = false) {
-   let idVal = isRoom ? `ROOM-${item.room}` : item.id;
-   let deptVal = item.dept || "—";
-   let itemNameVal = isRoom ? (item.room || "—") : (item.name || "—");
-   let roomVal = isRoom ? item.room : (item.room || "—");
-   let qrUrl = scanURL(isRoom ? 'room' : 'asset', item.id);
-
-   return `
-   <div class="lbl-card">
-      <div class="lbl-header">
-         PARK 5S SYSTEM
-      </div>
-      <div class="lbl-body">
-         <div class="lbl-details">
-            <div><b>Department :</b> <span>${safe(deptVal)}</span></div>
-            <div><b>item Name :</b> <span>${safe(itemNameVal)}</span></div>
-            <div><b>Asset ID :</b> <span>${safe(idVal)}</span></div>
-            <div><b>Room No :</b> <span>${safe(roomVal)}</span></div>
-         </div>
-         <div class="lbl-qr-box">
-            <div id="qr_${idVal.replace(/[^a-zA-Z0-9]/g,'_')}" class="qr-code-target" data-qr="${safe(qrUrl)}"></div>
-            <div class="qr-sub">Scan for System</div>
-         </div>
-      </div>
-   </div>`;
-}
-
-function attachCodesToLabels(container) {
-   container.querySelectorAll('.qr-code-target').forEach(el => {
-      new QRCode(el, { text: el.getAttribute('data-qr') || '', width: 62, height: 62 });
-   });
-}
-
-function printRoomLabel(roomId) {
-   let r = db.rooms.find(x => x.id == roomId);
-   if (!r) return;
-   let html = generateLabelHTML(r, true);
-   let w = window.open("", "_blank");
-   w.document.write(`<html><head><title>Room Label - ${safe(r.room)}</title>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-   <style>
-   body{font-family:Arial;padding:20px;display:flex;justify-content:center;align-items:center;height:90vh}
-   ${document.querySelector('style').innerHTML}
-   </style></head><body>${html}
-   <script>
-   const BASE_SYSTEM_URL = "${BASE_SYSTEM_URL}";
-   (${attachCodesToLabels.toString()})(document);
-   setTimeout(() => { window.print(); }, 400);
-   <\/script>
-   </body></html>`);
-   w.document.close();
-}
-
-function renderLabelsTab() {
-   let source = document.querySelector('input[name="lblSource"]:checked')?.value || "assets";
-   let head = document.getElementById("lblTabHead");
-   let body = document.getElementById("lblTabBody");
-   if (!head || !body) return;
-
-   if (source === "assets") {
-      head.innerHTML = `<th><input type="checkbox" onchange="selectAllLabels(this.checked)"></th><th>ID</th><th>Type</th><th>Item Name</th><th>Department</th><th>Room</th>`;
-      body.innerHTML = db.assets.map(a => `<tr>
-         <td><input type="checkbox" class="lbl-select-item" value="${safe(a.id)}"></td>
-         <td>${safe(a.id)}</td>
-         <td>${safe(a.type || "Equipment")}</td>
-         <td>${safe(a.name)}</td>
-         <td>${safe(a.dept)}</td>
-         <td>${safe(a.room)}</td>
-      </tr>`).join("");
-   } else {
-      head.innerHTML = `<th><input type="checkbox" onchange="selectAllLabels(this.checked)"></th><th>Building</th><th>Floor</th><th>Department</th><th>Room No / Name</th>`;
-      body.innerHTML = db.rooms.map(r => `<tr>
-         <td><input type="checkbox" class="lbl-select-room" value="${r.id}"></td>
-         <td>${safe(r.building)}</td>
-         <td>${safe(r.floor)}</td>
-         <td>${safe(r.dept)}</td>
-         <td>${safe(r.room)}</td>
-      </tr>`).join("");
-   }
-}
-
-function selectAllLabels(checked) {
-   document.querySelectorAll('.lbl-select-item, .lbl-select-room').forEach(cb => cb.checked = checked);
-}
-
-function printSelectedLabels() {
-   let source = document.querySelector('input[name="lblSource"]:checked')?.value || "assets";
-   let selectedHTML = "";
-
-   if (source === "assets") {
-      let selectedIds = [...document.querySelectorAll('.lbl-select-item:checked')].map(cb => cb.value);
-      if (!selectedIds.length) { alert("Please select at least one item to print."); return; }
-      let items = db.assets.filter(a => selectedIds.includes(a.id));
-      selectedHTML = items.map(a => generateLabelHTML(a, false)).join("");
-   } else {
-      let selectedIds = [...document.querySelectorAll('.lbl-select-room:checked')].map(cb => cb.value);
-      if (!selectedIds.length) { alert("Please select at least one room to print."); return; }
-      let rooms = db.rooms.filter(r => selectedIds.includes(String(r.id)));
-      selectedHTML = rooms.map(r => generateLabelHTML(r, true)).join("");
-   }
-
-   let w = window.open("", "_blank");
-   w.document.write(`<html><head><title>Batch Label Print</title>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-   <style>
-   body { font-family: Arial, sans-serif; padding: 20px; background: #fff; }
-   ${document.querySelector('style').innerHTML}
-   </style></head><body>
-   <div class="lbl-sheet">${selectedHTML}</div>
-   <script>
-   const BASE_SYSTEM_URL = "${BASE_SYSTEM_URL}";
-   (${attachCodesToLabels.toString()})(document);
-   setTimeout(() => { window.print(); }, 500);
-   <\/script>
-   </body></html>`);
-   w.document.close();
-}
-
-/* ============================================================
-   RED TAG DESIGN (A5 hang-tag, photo style) — Preview, Print and PDF share this
-   Colours: --rt-red in RT_CSS.  Text / logo: RT_CONFIG.
-   Print = 2 pages A5 (page 1 front, page 2 back) -> use duplex / flip printing
-   ============================================================ */
-const RT_CONFIG={
-  org:"PARK HOSPITALS",
-  title:"RED TAG",
-  footer:"PARK 5S Management System"
-};
-const RT_CATEGORIES=["Machine","Equipment","Small Item","Tool","Furniture","Other"];
-const RT_CSS=`
-:root{--rt-red:#e31b23;--rt-ink:#111}
-.rt-stage{background:#eef2f5;padding:16px;border-radius:8px;border:1px dashed #b71c1c;margin-bottom:10px;overflow:auto}
-.rt-wrap{display:flex;gap:10mm;flex-wrap:wrap;justify-content:center;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rt-sheet{width:148mm;height:210mm;box-sizing:border-box;position:relative;background:#fff;flex:none;overflow:hidden;box-shadow:0 1mm 3mm rgba(0,0,0,.25)}
-.rt-tag{position:absolute;left:4mm;right:4mm;top:3mm;bottom:3mm;background:var(--rt-red);color:var(--rt-ink);clip-path:polygon(20mm 0,calc(100% - 20mm) 0,100% 20mm,100% 100%,0 100%,0 20mm);padding:19mm 9mm 5mm;display:flex;flex-direction:column;box-sizing:border-box;text-align:left}
-.rt-eye{position:absolute;top:6mm;left:50%;transform:translateX(-50%);width:13mm;height:13mm;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#d9a520 55%,#8a6410);display:flex;align-items:center;justify-content:center}
-.rt-eye::after{content:"";width:7mm;height:7mm;border-radius:50%;background:#fff;box-shadow:inset 0 .6mm 1mm rgba(0,0,0,.45)}
-.rt-title{text-align:center;font-size:27pt;font-weight:900;letter-spacing:1mm;border-bottom:.6mm solid var(--rt-ink);padding-bottom:1mm;margin:0 8mm 4mm;line-height:1.1}
-.rt-top2{display:flex;gap:5mm;align-items:flex-start}
-.rt-col{flex:1;min-width:0}
-.rt-row{display:flex;gap:4mm}
-.rt-f{flex:1;min-width:0;margin-bottom:3mm}
-.rt-f label{display:block;font-size:7.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.2mm;margin-bottom:.4mm}
-.rt-v{border-bottom:.4mm solid var(--rt-ink);min-height:6.5mm;font-size:10.5pt;font-weight:700;padding:.3mm 1mm 0;word-break:break-word}
-.rt-qrbox{width:38mm;flex:none;text-align:center}
-.rt-qrbox .rt-qrimg{background:#fff;padding:2mm;width:38mm;height:38mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:8pt}
-.rt-qrbox .rt-qrimg img{width:100%;height:100%;display:block}
-.rt-qrbox small{display:block;font-size:6.5pt;font-weight:800;margin-top:1mm;letter-spacing:.2mm}
-.rt-sec{display:flex;align-items:center;gap:2mm;font-size:9.5pt;font-weight:900;letter-spacing:.5mm;margin:3mm 0 2.5mm}
-.rt-sec::before,.rt-sec::after{content:"";flex:1;border-top:.45mm solid var(--rt-ink)}
-.rt-checks{display:grid;grid-template-columns:1fr 1fr;gap:2.4mm 4mm}
-.rt-ck{display:flex;align-items:center;gap:2mm;font-size:9pt;font-weight:700}
-.rt-box{width:4.4mm;height:4.4mm;border:.45mm solid var(--rt-ink);flex:none;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#fff;line-height:1}
-.rt-box.on{background:var(--rt-ink)}
-.rt-box.on::after{content:"\\2713"}
-.rt-lines>div{border-bottom:.35mm solid var(--rt-ink);min-height:8mm;font-size:10pt;font-weight:700;padding:1.5mm 1mm 0;word-break:break-word}
-.rt-no{margin-top:3mm;text-align:center;font-size:9pt;font-weight:800}
-.rt-no b{display:inline-block;background:#fff;border:.45mm solid var(--rt-ink);border-radius:2mm;padding:1.2mm 4mm;font-size:13pt;letter-spacing:.3mm;margin-left:2mm;font-family:"Courier New",monospace}
-.rt-foot{margin-top:auto;text-align:center;font-size:7pt;font-weight:700;border-top:.3mm solid var(--rt-ink);padding-top:1.5mm}
-.rt-plain .rt-sheet{box-shadow:none}
-.rt-pages .rt-wrap{display:block}
-.rt-pages .rt-sheet{height:209.5mm;page-break-after:always;break-after:page}
-.rt-pages .rt-sheet:last-child{page-break-after:auto;break-after:auto}
-`;
-(function(){let s=document.getElementById('rtStyle');if(!s){s=document.createElement('style');s.id='rtStyle';document.head.appendChild(s)}s.textContent=RT_CSS})();
-
-function rtQR(text,size){
-  try{let d=document.createElement('div');new QRCode(d,{text:text,width:size||240,height:size||240,correctLevel:QRCode.CorrectLevel.M});let c=d.querySelector('canvas');return c?c.toDataURL('image/png'):''}catch(e){return ''}
-}
-function redTagHTML(t){
-  const qr=rtQR(scanURL('redtag',t.id));
-  const asset=(db.assets||[]).find(a=>a.id===t.assetId);
-  const cat=asset?asset.type:'';
-  const box=on=>`<span class="rt-box ${on?'on':''}"></span>`;
-  const ck=(list,sel)=>`<div class="rt-checks">${list.map(x=>`<div class="rt-ck">${box(x===sel)}${safe(x)}</div>`).join('')}</div>`;
-  const head=`<div class="rt-eye"></div><div class="rt-title">${safe(RT_CONFIG.title)}</div>`;
-  const foot=`<div class="rt-foot">${safe(RT_CONFIG.org)} · ${safe(RT_CONFIG.footer)}</div>`;
-  const f=(l,v)=>`<div class="rt-f"><label>${l}</label><div class="rt-v">${safe(v)}</div></div>`;
-  const front=`<div class="rt-sheet"><div class="rt-tag">${head}
-    <div class="rt-top2"><div class="rt-col">
-      <div class="rt-row">${f('Date',t.date)}${f('Tagged by',t.taggedBy||'')}</div>
-      ${f('Item name',t.item+(t.assetId?' ('+t.assetId+')':''))}
-      ${f('Location',(t.dept||'')+' — '+(t.room||''))}
-    </div><div class="rt-qrbox"><div class="rt-qrimg">${qr?`<img src="${qr}" alt="QR">`:'QR'}</div><small>SCAN · SIGN IN · VIEW RECORD</small></div></div>
-    <div class="rt-sec">CATEGORY</div>${ck(RT_CATEGORIES,cat)}
-    <div class="rt-sec">REASON</div>${ck(RED_TAG_REASONS,t.reason)}
-    <div class="rt-no">TAG NO.<b>${safe(t.id)}</b></div>
-    ${foot}</div></div>`;
-  const line=v=>`<div>${safe(v||'')}</div>`;
-  const back=`<div class="rt-sheet"><div class="rt-tag">${head}
-    <div class="rt-sec">ACTION TO TAKE</div>${ck(RED_TAG_DISPOSITIONS,t.disposition)}
-    <div class="rt-row" style="margin-top:3mm">${f('Action date',t.dispositionDate||'')}${f('Status',t.status||'')}</div>
-    <div class="rt-sec">ADDITIONAL COMMENTS</div>
-    <div class="rt-lines">${line(t.note)}${line(t.dispositionNote)}${line('')}${line('')}${line('')}${line('')}</div>
-    <div class="rt-no">TAG NO.<b>${safe(t.id)}</b></div>
-    ${foot}</div></div>`;
-  return `<div class="rt-wrap">${front}${back}</div>`;
-}
-
-function downloadRedTagPDF(id) {
-    let t = db.redtags.find(x => x.id === id);
-    if (!t) { alert("Red Tag record not found!"); return; }
-    let wrapper = document.createElement('div');
-    wrapper.style.position = 'fixed'; wrapper.style.left = '-9999px'; wrapper.style.top = '0';
-    wrapper.innerHTML = `<div id="pdfTarget" class="rt-plain rt-pages" style="width:148mm;background:#fff">${redTagHTML(t)}</div>`;
-    document.body.appendChild(wrapper);
-    let opt = {
-      margin: 0,
-      filename: `RedTag_${t.id}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      pagebreak: { mode: ['css'] },
-      jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(wrapper.querySelector('#pdfTarget')).save().then(() => {
-        document.body.removeChild(wrapper);
-    });
-}
-
-function printRedTag(id) {
-    let t = db.redtags.find(x => x.id === id); if (!t) return;
-    let w = window.open("", "_blank");
-    if (!w) { alert("Please allow pop-ups for this site to print."); return; }
-    w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>${RT_CSS}
-        @page{size:148mm 210mm;margin:0}
-        html,body{margin:0;padding:0;background:#fff}
-    </style></head><body><div class="rt-plain rt-pages">${redTagHTML(t)}</div></body></html>`);
-    w.document.close();
-    setTimeout(()=>w.print(),300);
-}
-
-function printRedTagList(){
+function printRedTag(id){
+ let t=db.redtags.find(x=>x.id===id);if(!t)return;
  let w=window.open("","_blank");
- if(!w){alert("Please allow pop-ups for this site to print.");return}
- let rows=(db.redtags||[]).map(t=>`<tr><td>${safe(t.id)}</td><td>${safe(t.date)}</td><td>${safe(t.item)}</td><td>${safe(t.assetId||"—")}</td><td>${safe(t.dept)}</td><td>${safe(t.room)}</td><td>${safe(t.reason)}</td><td>${safe(t.taggedBy||"—")}</td><td>${safe(t.status)}</td></tr>`).join("")||"<tr><td colspan=9>No red tags recorded.</td></tr>";
- w.document.write(`<html><head><title>Red Tag List</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;font-size:12px}th{background:#eee}</style></head><body><h1>PARK 5S — Red Tag List</h1><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Asset ID</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+ if(!w){alert("Please allow pop-ups for this site to print the red tag.");return}
+ w.document.write(`<html><head><title>Red Tag ${safe(t.id)}</title><style>
+ body{font-family:Arial;padding:20px}
+ .tag{border:4px solid #b91c1c;border-radius:10px;max-width:380px;padding:16px;margin:auto}
+ .tag h1{background:#b91c1c;color:#fff;text-align:center;margin:-16px -16px 12px -16px;padding:12px;border-radius:6px 6px 0 0;font-size:22px}
+ .tag table{width:100%;border-collapse:collapse;font-size:13px}
+ .tag td{padding:6px 4px;border-bottom:1px dashed #ccc;vertical-align:top}
+ .tag td.label{font-weight:bold;width:38%;color:#555}
+ .tagfoot{text-align:center;font-size:11px;color:#888;margin-top:10px}
+ </style></head><body>
+ <div class="tag">
+ <h1>🔴 RED TAG</h1>
+ <table>
+ <tr><td class=label>Tag #</td><td>${safe(t.id)}</td></tr>
+ <tr><td class=label>Date</td><td>${safe(t.date)}</td></tr>
+ <tr><td class=label>Item</td><td>${safe(t.item)}</td></tr>
+ <tr><td class=label>Asset ID</td><td>${safe(t.assetId||"—")}</td></tr>
+ <tr><td class=label>Department</td><td>${safe(t.dept)}</td></tr>
+ <tr><td class=label>Location</td><td>${safe(t.room)}</td></tr>
+ <tr><td class=label>Reason</td><td>${safe(t.reason)}</td></tr>
+ <tr><td class=label>Notes</td><td>${safe(t.note||"—")}</td></tr>
+ <tr><td class=label>Tagged By</td><td>${safe(t.taggedBy||"—")}</td></tr>
+ <tr><td class=label>Status</td><td>${safe(t.status)}</td></tr>
+ </table>
+ <p class=tagfoot>Do not remove this tag. Contact the 5S Committee for disposition.</p>
+ </div>
+ </body></html>`);
  w.document.close();
  w.print();
 }
-
-function renderRedTagPreview(){
-    let previewContainer = document.getElementById("redtagTemplatePreview");
-    if(!previewContainer) return;
-    let lastTag = (db.redtags && db.redtags.length > 0) ? db.redtags[db.redtags.length - 1] : {
-        id: "RT-2026-0001",
-        date: new Date().toISOString().slice(0,10),
-        item: "Sample Equipment Item",
-        assetId: "SAMPLE-001",
-        dept: "OPD",
-        room: "Consultation Room 01",
-        reason: "Not Needed",
-        taggedBy: "System Auditor",
-        note: "Sample Red Tag Note"
-    };
-    previewContainer.innerHTML = `<div class="rt-stage">${redTagHTML(lastTag)}</div>`;
+function printRedTagList(){
+ let w=window.open("","_blank");
+ if(!w){alert("Please allow pop-ups for this site to print the list.");return}
+ let rows=(db.redtags||[]).map(t=>`<tr><td>${safe(t.id)}</td><td>${safe(t.date)}</td><td>${safe(t.item)}</td><td>${safe(t.assetId||"—")}</td><td>${safe(t.dept)}</td><td>${safe(t.room)}</td><td>${safe(t.reason)}</td><td>${safe(t.taggedBy||"—")}</td><td>${safe(t.status)}</td></tr>`).join("")||"<tr><td colspan=9>No red tags recorded.</td></tr>";
+ w.document.write(`<html><head><title>Red Tag Holding List</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left;font-size:12px}th{background:#eee}h1{color:#b91c1c}</style></head><body><h1>PARK 5S — Red Tag Holding List</h1><p>Generated: ${new Date().toLocaleString()}</p><table><thead><tr><th>Tag #</th><th>Date</th><th>Item</th><th>Asset ID</th><th>Dept</th><th>Location</th><th>Reason</th><th>Tagged By</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+ w.document.close();
+ w.print();
 }
+/* =================== END RED TAG SYSTEM ==================== */
 
-function maintForm(){openModal(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
+function maintForm(){open(`<h2>Record Maintenance</h2><div class=grid><label>Asset<select id=mi>${db.assets.map(a=>`<option>${a.id}</option>`).join("")}</select></label><label>Date<input id=md type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Next Due<input id=mn type=date></label><label>Provider<input id=mp></label><label>Cost (Rs.)<input id=mv type=number></label></div><button onclick=saveMaint()>Save</button> <button onclick=close()>Cancel</button>`)}
 function saveMaint(){let a=db.assets.find(x=>x.id==mi.value);a.last=md.value;a.next=mn.value;a.status="Active";db.maintenance.push({asset:a.name,id:a.id,last:md.value,next:mn.value,provider:mp.value,cost:+mv.value||0});close();save()}
 
-function auditForm(){openModal(`<h2>5S Audit</h2><div class=grid><label>Department<select id=xdept>${configuredDepartments().map(d=>`<option>${d}</option>`).join("")}</select></label><label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Auditor<input id=xaud></label><label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>${["Sort","Set in Order","Shine","Standardize","Sustain"].map(s=>`<label>${s}<select id=x${s.replaceAll(" ","")}><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>`).join("")}</div><label>Finding<textarea id=xf></textarea></label><label>Corrective Action<textarea id=xa></textarea></label><button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`)}
+function auditForm(){open(`<h2>5S Audit</h2><div class=grid><label>Department<select id=xdept>${DEPTS.map(d=>`<option>${d}</option>`).join("")}</select></label><label>Room<select id=xroom>${db.rooms.map(r=>`<option>${r.room}</option>`).join("")}</select></label><label>Auditor<input id=xaud></label><label>Date<input id=xdate type=date value="${new Date().toISOString().slice(0,10)}"></label>${["Sort","Set in Order","Shine","Standardize","Sustain"].map(s=>`<label>${s}<select id=x${s.replaceAll(" ","")}><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>`).join("")}</div><label>Finding<textarea id=xf></textarea></label><label>Corrective Action<textarea id=xa></textarea></label><button onclick=saveAudit()>Save</button> <button onclick=close()>Cancel</button>`)}
 function saveAudit(){let vals=["Sort","SetInOrder","Shine","Standardize","Sustain"].map(s=>+document.getElementById("x"+s).value);db.audits.push({date:xdate.value,dept:xdept.value,room:xroom.value,auditor:xaud.value,vals});if(xa.value)db.actions.push({date:xdate.value,type:"5S Corrective Action",item:"Room Audit",location:xroom.value,finding:xf.value,status:"Open"});close();save()}
 
 function render(){
-  let today=new Date().toISOString().slice(0,10);
-  let missingCount=db.assets.filter(a=>a.status=="Missing").length;
-  let repairCount=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length;
-  let dueCount=db.assets.filter(a=>a.next&&a.next<=today).length;
-  let openTagsCount=(db.redtags||[]).filter(t=>t.status!=="Resolved").length;
-
-  document.getElementById("cards").innerHTML=[
-    ["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],
-    ["Rooms",db.rooms.length],
-    ["Registered Assets",db.assets.length],
-    ["Missing",missingCount],
-    ["Needs Repair",repairCount],
-    ["Maintenance Due",dueCount],
-    ["Red Tags (Open)",openTagsCount]
-  ].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
-
-  document.getElementById("roomsT").innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button> <button onclick="printRoomLabel('${r.id}')">Print Label</button></td></tr>`).join("");
-  document.getElementById("assetsT").innerHTML=db.assets.map(a=>`<tr><td>${a.photo ? `<img src="${a.photo}" class="item-thumb">` : '—'}</td><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button> <button onclick='redTagForm(${JSON.stringify(a)})' class="redbtn">Red Tag</button></td></tr>`).join("");
-  document.getElementById("locT").innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
-  document.getElementById("mcards").innerHTML=[["Due Today/Overdue",dueCount],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repairCount]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
-  document.getElementById("maintT").innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
-  document.getElementById("auditT").innerHTML=db.audits.map(a=>`<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v=>`<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x,y)=>x+y,0)/20*100)}%</td></tr>`).join("");
-  {let adm=typeof isAdmin==="function"&&isAdmin();
-  let th=document.getElementById("actionsDelTh");if(th)th.textContent=adm?"Remove":"";
-  document.getElementById("actionsT").innerHTML=db.actions.map((a,i)=>`<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td><td>${adm?`<button class="redbtn" onclick="deleteAction(${i})">Remove</button>`:""}</td></tr>`).join("");}
-
-  let rt=document.getElementById("redtagT");
-  if(rt)rt.innerHTML=(db.redtags||[]).map(t=>`<tr><td>${t.id}</td><td>${t.date}</td><td>${t.item}</td><td>${t.assetId||"—"}</td><td>${t.dept}</td><td>${t.room}</td><td>${t.reason}</td><td>${t.taggedBy||"—"}</td><td><span class="tagbadge ${t.status==="Resolved"?"tagresolved":"tagopen"}">${t.status}</span></td><td><button onclick="printRedTag('${t.id}')">Print</button> <button onclick="downloadRedTagPDF('${t.id}')">PDF</button>${t.status!=="Resolved"?` <button onclick="resolveRedTagForm('${t.id}')">Resolve</button>`:""}</td></tr>`).join("")||"<tr><td colspan=10>No red tags recorded.</td></tr>";
-
-  document.getElementById("dept").innerHTML=configuredDepartments().map(d=>{
-    let r=db.rooms.filter(x=>x.dept==d),a=db.assets.filter(x=>x.dept==d),au=db.audits.filter(x=>x.dept==d);
-    let sc=au.length?Math.round(au.reduce((t,x)=>t+x.vals.reduce((p,q)=>p+q,0)/20*100,0)/au.length):0;
-    return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x=>x.status=="Missing").length}</td><td>${a.filter(x=>x.condition&&x.condition.includes("Repair")).length}</td><td>${sc?sc+"%":"—"}</td></tr>`;
-  }).join("");
-
-  document.getElementById("summary").textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing:missingCount,needsRepair:repairCount,maintenanceDue:dueCount},null,2);
-  renderRedTagPreview();
-  renderLabelsTab();
+let today=new Date().toISOString().slice(0,10), missing=db.assets.filter(a=>a.status=="Missing").length, repair=db.assets.filter(a=>a.condition=="Needs Repair"||a.condition=="Beyond Repair").length,due=db.assets.filter(a=>a.next&&a.next<=today).length,openTags=(db.redtags||[]).filter(t=>t.status!=="Resolved").length;
+cards.innerHTML=[["Buildings",[...new Set(db.rooms.map(r=>r.building))].length],["Rooms",db.rooms.length],["Registered Assets",db.assets.length],["Missing",missing],["Needs Repair",repair],["Maintenance Due",due],["Red Tags (Open)",openTags]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+roomsT.innerHTML=db.rooms.map(r=>`<tr><td>${r.building}</td><td>${r.floor}</td><td>${r.dept}</td><td>${r.room}</td><td>${r.person}</td><td>${r.status}</td><td><button onclick='roomForm(${JSON.stringify(r)})'>Edit</button></td></tr>`).join("");
+assetsT.innerHTML=db.assets.map(a=>`<tr><td>${a.id}</td><td>${a.type||"Equipment"}</td><td>${a.name}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.condition}</td><td>${a.purchase||"-"}</td><td>Rs. ${(+a.value||0).toLocaleString()}</td><td>${a.status}</td><td><button onclick='assetForm(${JSON.stringify(a)})'>Edit</button> <button onclick="move('${a.id}')">Move</button> <button onclick="missing('${a.id}')">Missing</button> <button onclick='redTagForm(${JSON.stringify(a)})' class="redbtn">Red Tag</button></td></tr>`).join("");
+locT.innerHTML=db.assets.map(a=>`<tr><td>${a.room}</td><td>${a.name} (${a.id})</td><td>1</td><td>${a.status=="Missing"?0:1}</td><td><span class="badge ${a.status=="Missing"?"bad":"ok"}">${a.status=="Missing"?"Missing":"Present"}</span></td><td>${a.status=="Missing"?"Investigate":"Verified"}</td></tr>`).join("");
+mcards.innerHTML=[["Due Today/Overdue",due],["Under Maintenance",db.assets.filter(a=>a.status=="Under Maintenance").length],["Needs Repair",repair]].map(x=>`<div class=card>${x[0]}<b>${x[1]}</b></div>`).join("");
+maintT.innerHTML=db.assets.filter(a=>a.last||a.next).map(a=>`<tr><td>${a.name}</td><td>${a.id}</td><td>${a.last||"-"}</td><td>${a.next||"-"}</td><td>-</td><td>Rs. ${(+a.value||0).toLocaleString()}</td></tr>`).join("");
+auditT.innerHTML=db.audits.map(a=>`<tr><td>${a.date}</td><td>${a.dept}</td><td>${a.room}</td><td>${a.auditor}</td>${a.vals.map(v=>`<td>${v}/4</td>`).join("")}<td>${Math.round(a.vals.reduce((x,y)=>x+y,0)/20*100)}%</td></tr>`).join("");
+actionsT.innerHTML=db.actions.map(a=>`<tr><td>${a.date}</td><td>${a.type}</td><td>${a.item}</td><td>${a.location}</td><td>${a.finding}</td><td>${a.status}</td></tr>`).join("");
+let rt=document.getElementById("redtagT");if(rt)rt.innerHTML=(db.redtags||[]).map(t=>`<tr><td>${t.id}</td><td>${t.date}</td><td>${t.item}</td><td>${t.assetId||"—"}</td><td>${t.dept}</td><td>${t.room}</td><td>${t.reason}</td><td>${t.taggedBy||"—"}</td><td><span class="tagbadge ${t.status==="Resolved"?"tagresolved":"tagopen"}">${t.status}${t.status==="Resolved"?" — "+safe(t.disposition||""):""}</span></td><td><button onclick="printRedTag('${t.id}')">Print</button>${t.status!=="Resolved"?` <button onclick="resolveRedTagForm('${t.id}')">Resolve</button>`:""}</td></tr>`).join("")||"<tr><td colspan=10>No red tags recorded.</td></tr>";
+dept.innerHTML=DEPTS.map(d=>{let r=db.rooms.filter(x=>x.dept==d),a=db.assets.filter(x=>x.dept==d),au=db.audits.filter(x=>x.dept==d);let sc=au.length?Math.round(au.reduce((t,x)=>t+x.vals.reduce((p,q)=>p+q,0)/20*100,0)/au.length):0;return `<tr><td>${d}</td><td>${r.length}</td><td>${a.length}</td><td>${a.filter(x=>x.status=="Missing").length}</td><td>${a.filter(x=>x.condition.includes("Repair")).length}</td><td>${sc?sc+"%":"—"}</td></tr>`}).join("");
+summary.textContent=JSON.stringify({generated:new Date().toISOString(),rooms:db.rooms.length,assets:db.assets.length,missing,needsRepair:repair,maintenanceDue:due},null,2);
 }
-
-function exportData(){alert("JSON export has been removed. The system now uses the live Google database.");}
+function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="PARK_5S_Data.json";a.click();URL.revokeObjectURL(u)}
+render();
 
 const CP_DEFAULTS={
-  name:"PARK 5S Management System",
-  subtitle:"5S • Rooms • Assets • Maintenance • Location Control",
-  currency:"LKR",
-  departments:["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown","IT"],
-  statuses:["Active","In Use","In Storage","Under Maintenance","Needs Repair","Missing","Transferred","Replaced","Disposed","Lost","Awaiting Disposal","Not in Use"],
-  conditions:["Excellent","Good","Fair","Needs Repair","Damaged","Not Working"],
-  criteria:["Sort – unnecessary items removed","Set in Order – items have designated locations","Shine – room/equipment is clean","Standardize – labels/checklists are maintained","Sustain – standards are consistently followed"]
+name:"PARK 5S Management System",
+subtitle:"5S • Rooms • Assets • Maintenance • Location Control",
+currency:"LKR",
+departments:["Reception","OPD","Pharmacy","Ward","Kitchen","Account","Marketing","HR","Maintenance","Crown"],
+statuses:["Active","In Use","In Storage","Under Maintenance","Needs Repair","Missing","Transferred","Replaced","Disposed","Lost","Awaiting Disposal","Not in Use"],
+conditions:["Excellent","Good","Fair","Needs Repair","Damaged","Not Working"],
+criteria:["Sort – unnecessary items removed","Set in Order – items have designated locations","Shine – room/equipment is clean","Standardize – labels/checklists are maintained","Sustain – standards are consistently followed"]
 };
-
 function cpConfig(){
  try{return Object.assign({},CP_DEFAULTS,JSON.parse(localStorage.getItem("park5sConfig")||"{}"))}
  catch(e){return Object.assign({},CP_DEFAULTS)}
 }
-function configuredDepartments(){
-  const c=cpConfig();
-  return Array.isArray(c.departments)&&c.departments.length?c.departments:DEPTS;
+function cpAdmin(){
+ return typeof isAdmin==="function" && isAdmin();
 }
-function cpAdmin(){return typeof isAdmin==="function" && isAdmin()}
-function cpEscape(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
+function cpEscape(v){
+ return String(v).replace(/[&<>"']/g,function(m){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m]});
+}
 function cpSaveSettings(){
  if(!cpAdmin()){alert("Admin access required.");return}
  let c=cpConfig();
@@ -1019,47 +310,71 @@ function cpSaveSettings(){
  c.subtitle=document.getElementById("cpSubtitle").value.trim()||CP_DEFAULTS.subtitle;
  c.currency=document.getElementById("cpCurrency").value.trim()||"LKR";
  localStorage.setItem("park5sConfig",JSON.stringify(c));
- saveToLiveDatabase();
  document.title=c.name;
- document.getElementById("sysHeaderTitle").textContent=c.name;
- document.getElementById("sysHeaderSub").textContent=c.subtitle;
  alert("Settings saved.");
 }
 function cpAdd(type,id){
  if(!cpAdmin()){alert("Admin access required.");return}
  let el=document.getElementById(id),v=el.value.trim();if(!v)return;
  let c=cpConfig();if(!c[type].includes(v))c[type].push(v);
- localStorage.setItem("park5sConfig",JSON.stringify(c));el.value="";cpRender();saveToLiveDatabase();
+ localStorage.setItem("park5sConfig",JSON.stringify(c));el.value="";cpRender();
 }
 function cpRemove(type,i){
  if(!cpAdmin())return;
  let c=cpConfig();c[type].splice(i,1);
- localStorage.setItem("park5sConfig",JSON.stringify(c));cpRender();saveToLiveDatabase();
+ localStorage.setItem("park5sConfig",JSON.stringify(c));cpRender();
 }
 function cpList(type,id){
  let c=cpConfig(),el=document.getElementById(id);if(!el)return;
- el.innerHTML=c[type].map((x,i)=>'<div class="control-row"><span>'+cpEscape(x)+'</span><button onclick="cpRemove(\''+type+'\','+i+')">Remove</button></div>').join("");
+ el.innerHTML=c[type].map(function(x,i){
+  return '<div class="control-row"><span>'+cpEscape(x)+'</span><button onclick="cpRemove(\''+type+'\','+i+')">Remove</button></div>';
+ }).join("");
 }
 function cpRender(){
  let c=cpConfig(),n=document.getElementById("cpName");if(!n)return;
  n.value=c.name;document.getElementById("cpSubtitle").value=c.subtitle;document.getElementById("cpCurrency").value=c.currency;
- document.getElementById("sysHeaderTitle").textContent=c.name;
- document.getElementById("sysHeaderSub").textContent=c.subtitle;
  cpList("departments","cpDeptList");cpList("statuses","cpStatusList");cpList("conditions","cpConditionList");cpList("criteria","cpCriterionList");
+}
+function cpBackup(){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let database=null;
+ try{database=JSON.parse(localStorage.getItem("park5sDB")||"null")}catch(e){}
+ if(!database && typeof db!=="undefined")database=db;
+ let payload={version:4,exportedAt:new Date().toISOString(),config:cpConfig(),database:database};
+ let blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="PARK_5S_Full_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();
+}
+function cpRestoreBackup(event){
+ if(!cpAdmin()){alert("Admin access required.");return}
+ let f=event.target.files[0];if(!f)return;
+ let r=new FileReader();
+ r.onload=function(){
+  try{
+   let x=JSON.parse(r.result);
+   if(!x.database)throw new Error("Invalid backup file");
+   localStorage.setItem("park5sConfig",JSON.stringify(x.config||CP_DEFAULTS));
+   localStorage.setItem("park5s",JSON.stringify(x.database));
+   alert("Backup restored. The system will reload.");
+   location.reload();
+  }catch(e){alert("Restore failed: "+e.message)}
+ };
+ r.readAsText(f);
 }
 function cpResetConfig(){
  if(!cpAdmin()){alert("Admin access required.");return}
  if(confirm("Reset Control Panel settings to defaults? Rooms and assets will remain.")){
-  localStorage.setItem("park5sConfig",JSON.stringify(CP_DEFAULTS));cpRender();saveToLiveDatabase();alert("Configuration reset and queued for Google Sheet sync.");
+  localStorage.setItem("park5sConfig",JSON.stringify(CP_DEFAULTS));cpRender();alert("Configuration reset.");
  }
 }
 
+cpRender();
+
+/* Local access control, user administration and accountability. */
 const USER_DEFAULTS=[
- {id:"admin",username:"admin",name:"System Administrator",password:"admin123",role:"Admin",status:"Active",lastLogin:"",permissions:[]},
+ {id:"admin",username:"admin",name:"System Administrator",password:"admin123",role:"Viewer",status:"Active",lastLogin:"",permissions:[]},
  {id:"viewer",username:"viewer",name:"Read-only Viewer",password:"viewer123",role:"Viewer",status:"Active",lastLogin:"",permissions:["reports"]}
 ];
-const PERMISSION_LINKS=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["labels","Labels Center"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"]];
-
+const PERMISSION_LINKS=[["dashboard","Dashboard"],["rooms","Buildings & Rooms"],["assets","Asset Register"],["location","Location Control"],["maintenance","Maintenance"],["audit","5S Audit"],["actions","Actions"],["redtag","Red Tag"],["reports","Reports"]];
 function securitySetup(){
  db.users=Array.isArray(db.users)&&db.users.length?db.users:USER_DEFAULTS.map(x=>Object.assign({},x));
  db.users.forEach(u=>{if(!Array.isArray(u.permissions))u.permissions=u.role==="Admin"?[]:["reports"]});
@@ -1070,153 +385,27 @@ function securitySetup(){
 function sessionUser(){return db.users.find(u=>u.username===sessionStorage.getItem("park5sUser")&&u.status==="Active")||null}
 function isAdmin(){let u=sessionUser();return !!u&&u.role==="Admin"}
 function canAccess(id){let u=sessionUser();return !!u&&(u.role==="Admin"||u.permissions.includes(id))}
-function requireAdmin(){if(isAdmin())return true;alert("Administrator login is required.");showLogin();return false}
-function safe(v){return String(v==null?"":v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
-function logActivity(action,details){
- let u=sessionUser();if(!u)return;
- db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});
- localCacheSave();
- clearTimeout(liveSaveTimer);
- liveSaveTimer=setTimeout(()=>saveToLiveDatabase(),150);
-}
-function showLogin(){openModal(`<h2>Sign in</h2><label>Username<input id=loginUser autocomplete=username></label><label>Password<input id=loginPass type=password autocomplete=current-password></label><br><button onclick=login()>Sign in</button>`)}
-function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.password===loginPass.value&&x.status==="Active");if(!u){alert("Invalid credentials.");return}sessionStorage.setItem("park5sUser",u.username);u.lastLogin=new Date().toLocaleString();logActivity("Signed in","Successful login");close();if(window.SCAN_PENDING){showScanDetail();return}if(u.role!=="Admin"){go("reports");return}render();}
+function requireAdmin(){if(isAdmin())return true;alert("Administrator login is required for updates and development.");showLogin();return false}
+function safe(v){return String(v==null?"":v).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[m])}
+function logActivity(action,details){let u=sessionUser();if(!u)return;db.activity.unshift({time:new Date().toLocaleString(),user:u.username,action,details:details||""});localStorage.setItem("park5s",JSON.stringify(db));}
+function showLogin(){open(`<h2>Sign in</h2><p>Sign in to use the system. Administrator rights are required for all updates.</p><label>Username<input id=loginUser autocomplete=username></label><label>Password<input id=loginPass type=password autocomplete=current-password></label><br><button onclick=login()>Sign in</button>`)}
+function login(){let u=db.users.find(x=>x.username===loginUser.value.trim()&&x.password===loginPass.value&&x.status==="Active");if(!u){alert("Invalid credentials or inactive account.");return}sessionStorage.setItem("park5sUser",u.username);u.lastLogin=new Date().toLocaleString();logActivity("Signed in","Successful login");close();if(u.role!=="Admin"){go("reports");return}render();}
 function logout(){let u=sessionUser();if(u)logActivity("Signed out","");sessionStorage.removeItem("park5sUser");render();}
-function userForm(user){if(!requireAdmin())return;let allowed=user?.permissions||["reports"],checks=PERMISSION_LINKS.map(([id,label])=>`<label style="display:block;margin:6px 0"><input type=checkbox name=permission value="${id}" ${allowed.includes(id)?"checked":""} style="width:auto;margin-right:7px">${label}</label>`).join("");openModal(`<h2>${user?"Edit":"Add"} User</h2><div class=grid><label>Username<input id=uu value="${safe(user?.username||"")}" ${user?.username==="admin"?"readonly":""}></label><label>Full name<input id=un value="${safe(user?.name||"")}"></label><label>Password<input id=up type=password placeholder="${user?"Leave blank to keep current password":"Set password"}"></label><label>Role<select id=ur><option ${user?.role==="Admin"?"selected":""}>Admin</option><option ${user?.role==="Viewer"?"selected":""}>Viewer</option></select></label><label>Status<select id=us><option ${user?.status!=="Inactive"?"selected":""}>Active</option><option ${user?.status==="Inactive"?"selected":""}>Inactive</option></select></label></div><div class="panel"><h3>Options available to this user</h3>${checks}</div><button onclick="saveUser('${user?.id||""}')">Save User</button> <button onclick=close()>Cancel</button>`)}
-function saveUser(id){if(!requireAdmin())return;let username=uu.value.trim(),existing=db.users.find(u=>u.username===username&&u.id!==id);if(!username||existing){alert("Enter a unique username.");return}let i=db.users.findIndex(u=>u.id===id),old=i>=0?db.users[i]:null;if(old&&old.username===sessionUser()?.username&&us.value==="Inactive"){alert("You cannot deactivate your own signed-in account.");return}let permissions=[...document.querySelectorAll('input[name=permission]:checked')].map(x=>x.value),record={id:id||Date.now().toString(),username,name:un.value.trim()||username,password:up.value||old?.password||"",role:ur.value,status:us.value,lastLogin:old?.lastLogin||"",permissions};if(!record.password){alert("A password is required.");return}if(record.role!=="Admin"&&!permissions.length){alert("Select at least one option for this user.");return}if(i>=0)db.users[i]=record;else db.users.push(record);logActivity(i>=0?"Updated user":"Added user",username);close();save();}
-
-function renderRoomReport(){
-  let sel = document.getElementById("reportRoom"), out = document.getElementById("roomReport");
-  if(!sel || !out) return;
-  let room = sel.value, items = db.assets.filter(a => a.room === room);
-  out.innerHTML = `<h3>${safe(room)} — ${items.length} item(s)</h3><table><thead><tr><th>Photo</th><th>Identification Code</th><th>Type</th><th>Item / Equipment</th><th>Department</th><th>Condition</th><th>Status</th></tr></thead><tbody>${items.map(a => `<tr><td>${a.photo ? `<img src="${a.photo}" class="item-thumb">` : '—'}</td><td>${safe(a.id)}</td><td>${safe(a.type || "Equipment")}</td><td>${safe(a.name)}</td><td>${safe(a.dept)}</td><td>${safe(a.condition)}</td><td>${safe(a.status)}</td></tr>`).join("") || "<tr><td colspan=7>No registered items in this room.</td></tr>"}</tbody></table>`;
-}
-
-function printRoomReport(){let r=document.getElementById("roomReport");if(!r)return;let w=window.open("","_blank");w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px}th{background:#eee}.item-thumb{width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ccc}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);w.document.close();w.print()}
+function userForm(user){if(!requireAdmin())return;let allowed=user?.permissions||["reports"],checks=PERMISSION_LINKS.map(([id,label])=>`<label style="display:block;margin:6px 0"><input type=checkbox name=permission value="${id}" ${allowed.includes(id)?"checked":""} style="width:auto;margin-right:7px">${label}</label>`).join("");open(`<h2>${user?"Edit":"Add"} User</h2><div class=grid><label>Username<input id=uu value="${safe(user?.username||"")}" ${user?.username==="admin"?"readonly":""}></label><label>Full name<input id=un value="${safe(user?.name||"")}"></label><label>Password<input id=up type=password placeholder="${user?"Leave blank to keep current password":"Set password"}"></label><label>Role<select id=ur><option ${user?.role==="Admin"?"selected":""}>Admin</option><option ${user?.role==="Viewer"?"selected":""}>Viewer</option></select></label><label>Status<select id=us><option ${user?.status!=="Inactive"?"selected":""}>Active</option><option ${user?.status==="Inactive"?"selected":""}>Inactive</option></select></label></div><div class="panel"><h3>Options available to this user</h3><p>Administrators always have full access. For Viewer users, select only the screens they need.</p>${checks}</div><button onclick="saveUser('${user?.id||""}')">Save User</button> <button onclick=close()>Cancel</button>`)}
+function saveUser(id){if(!requireAdmin())return;let username=uu.value.trim(),existing=db.users.find(u=>u.username===username&&u.id!==id);if(!username||existing){alert("Enter a unique username.");return}let i=db.users.findIndex(u=>u.id===id),old=i>=0?db.users[i]:null;if(old&&old.username===sessionUser()?.username&&us.value==="Inactive"){alert("You cannot deactivate your own signed-in account.");return}let permissions=[...document.querySelectorAll('input[name=permission]:checked')].map(x=>x.value),record={id:id||Date.now().toString(),username,name:un.value.trim()||username,password:up.value||old?.password||"",role:ur.value,status:us.value,lastLogin:old?.lastLogin||"",permissions};if(!record.password){alert("A password is required.");return}if(record.role!=="Admin"&&!permissions.length){alert("Select at least one option for this user.");return}if(i>=0)db.users[i]=record;else db.users.push(record);logActivity(i>=0?"Updated user":"Added user",username+" — "+record.status+", options: "+(record.role==="Admin"?"All":permissions.join(", ")));close();save();}
+function renderRoomReport(){let sel=document.getElementById("reportRoom"),out=document.getElementById("roomReport");if(!sel||!out)return;let room=sel.value,items=db.assets.filter(a=>a.room===room);out.innerHTML=`<h3>${safe(room)} — ${items.length} item(s)</h3><table><thead><tr><th>Identification Code</th><th>Type</th><th>Item / Equipment</th><th>Department</th><th>Condition</th><th></th><th>Status</th></tr></thead><tbody>${items.map(a=>`<tr><td>${safe(a.id)}</td><td>${safe(a.type||"Equipment")}</td><td>${safe(a.name)}</td><td>${safe(a.dept)}</td><td>${safe(a.condition)}</td><td>${safe(a.status)}</td></tr>`).join("")||"<tr><td colspan=6>No registered items in this room.</td></tr>"}</tbody></table>`}
+function printRoomReport(){let r=document.getElementById("roomReport");if(!r)return;let w=window.open("","_blank");w.document.write(`<html><head><title>Room Contents Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left}th{background:#eee}</style></head><body><h1>PARK 5S Management System</h1>${r.innerHTML}</body></html>`);w.document.close();w.print()}
 function downloadRoomReport(){let room=document.getElementById("reportRoom")?.value||"",rows=[["Room","Identification Code","Type","Item / Equipment","Department","Condition","Status"],...db.assets.filter(a=>a.room===room).map(a=>[room,a.id,a.type||"Equipment",a.name,a.dept,a.condition,a.status])],csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Room_Contents_"+room.replace(/[^a-z0-9]+/gi,"_")+".csv";a.click();URL.revokeObjectURL(a.href)}
-
 function renderSecurity(){
  let u=sessionUser(),loginButton=u?`<button onclick="logout()">Sign out (${safe(u.username)})</button>`:`<button onclick="showLogin()">Admin / User Login</button>`,adminLinks=[...PERMISSION_LINKS,["users","Users"],["activity","Activity Log"],["control","Control Panel"]],viewerLinks=u?PERMISSION_LINKS.filter(([id])=>u.permissions.includes(id)):[];
- document.getElementById("nav").innerHTML=(isAdmin()?adminLinks:(u?viewerLinks:[["dashboard","Dashboard"],["reports","Reports"]])).map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("")+loginButton;
+ nav.innerHTML=(isAdmin()?adminLinks:(u?viewerLinks:[["dashboard","Dashboard"],["reports","Reports"]])).map(x=>`<button onclick="go('${x[0]}')">${x[1]}</button>`).join("")+loginButton;
  let adminTools=document.getElementById("adminReportTools");if(adminTools)adminTools.style.display=isAdmin()?"block":"none";
- let t=document.getElementById("usersT");if(t)t.innerHTML=db.users.map(x=>`<tr><td>${safe(x.username)}</td><td>${safe(x.name)}</td><td>${safe(x.role)}</td><td><span class="badge ${x.status==="Active"?"ok":"bad"}">${safe(x.status)}</span></td><td>${safe(safe(x.lastLogin)||"Never")}</td><td>${isAdmin()?`<button onclick='userForm(${JSON.stringify(x)})'>Edit</button>`:""}</td></tr>`).join("");
+ let t=document.getElementById("usersT");if(t)t.innerHTML=db.users.map(x=>`<tr><td>${safe(x.username)}</td><td>${safe(x.name)}</td><td>${safe(x.role)}</td><td><span class="badge ${x.status==="Active"?"ok":"bad"}">${safe(x.status)}</span></td><td>${safe(x.lastLogin||"Never")}</td><td>${isAdmin()?`<button onclick='userForm(${JSON.stringify(x)})'>Edit</button>`:""}</td></tr>`).join("");
  let a=document.getElementById("activityT");if(a)a.innerHTML=db.activity.map(x=>`<tr><td>${safe(x.time)}</td><td>${safe(x.user)}</td><td>${safe(x.action)}</td><td>${safe(x.details)}</td></tr>`).join("")||"<tr><td colspan=4>No activity recorded yet.</td></tr>";
  let rs=document.getElementById("reportRoom");if(rs){let previous=rs.value;rs.innerHTML=[...new Set(db.rooms.map(r=>r.room))].map(r=>`<option ${r===previous?"selected":""}>${safe(r)}</option>`).join("");renderRoomReport()}
 }
-
-const protectedMutations=["deleteAction","roomForm","saveRoom","assetForm","saveAsset","move","doMove","missing","maintForm","saveMaint","auditForm","saveAudit","redTagForm","saveRedTag","resolveRedTagForm","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpBackup","cpRestoreBackup","cpResetConfig"];
-protectedMutations.forEach(name=>{
-  let original=window[name];
-  if(original){
-    window[name]=function(...args){
-      if(!requireAdmin())return;
-      let result=original.apply(this,args);
-      if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","saveRedTag","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);
-      return result;
-    }
-  }
-});
-
-const originalRender=render;
-render=function(){
-  originalRender();
-  renderSecurity();
-};
-
-
-/* ============================================================
-   QR SCAN  ->  SIGN IN  ->  RECORD DETAILS
-   Labels / tags carry  ?t=asset|room|redtag&id=...   (old ?id=... labels still work)
-   ============================================================ */
-let SCAN=null,SCAN_STACK=[];
-function parseScan(){try{let q=new URLSearchParams(location.search),id=q.get('id');if(!id)return null;return{t:(q.get('t')||'').toLowerCase(),id:id}}catch(e){return null}}
-function scanURL(t,id){return BASE_SYSTEM_URL+'?t='+encodeURIComponent(t)+'&id='+encodeURIComponent(id)}
-function scanFind(){
-  const id=SCAN.id,t=SCAN.t;
-  const A=()=>db.assets.find(a=>String(a.id)===id);
-  const R=()=>db.rooms.find(r=>String(r.id)===id)||db.rooms.find(r=>String(r.room)===id)||db.rooms.find(r=>String(r.room).replace(/[^a-zA-Z0-9]/g,'_')===id.replace(/^ROOM_/,''));
-  const T=()=>(db.redtags||[]).find(x=>String(x.id)===id);
-  if(t==='asset'){let a=A();return a?{type:'asset',rec:a}:null}
-  if(t==='room'){let r=R();return r?{type:'room',rec:r}:null}
-  if(t==='redtag'){let x=T();return x?{type:'redtag',rec:x}:null}
-  let a=A();if(a)return{type:'asset',rec:a};let x=T();if(x)return{type:'redtag',rec:x};let r=R();return r?{type:'room',rec:r}:null;
-}
-function scanShell(inner){
-  let v=document.getElementById('scanView');
-  if(!v){v=document.createElement('div');v.id='scanView';document.body.appendChild(v)}
-  let u=null;try{u=sessionUser()}catch(e){}
-  let nm='PARK 5S System';try{nm=cpConfig().name||nm}catch(e){}
-  v.innerHTML=`<div class="sv-head"><b>${safe(nm)}</b><span>${u?safe(u.name||u.username)+'<button onclick="scanSignOut()">Sign out</button>':''}</span></div><div class="sv-body">${inner}</div>`;
-  v.style.display='block';
-}
-function scanGate(){
-  if(!SCAN)return;
-  if(sessionUser()){showScanDetail();return}
-  scanShell('<div class="sv-card"><h2>Sign in required</h2><p>Please sign in with your username and password to view this record.</p><button onclick="showLogin()">Sign in</button></div>');
-  showLogin();
-}
-function scanSignOut(){logout();window.SCAN_PENDING=true;SCAN_STACK=[];scanGate()}
-function scanGo(t,id){SCAN_STACK.push(SCAN);SCAN={t:t,id:id};showScanDetail()}
-function scanBack(){if(SCAN_STACK.length){SCAN=SCAN_STACK.pop();showScanDetail()}}
-function scanOpenFull(){
-  let f=scanFind();window.SCAN_PENDING=false;
-  let v=document.getElementById('scanView');if(v)v.style.display='none';
-  try{history.replaceState(null,'',location.pathname)}catch(e){}
-  render();
-  let page=f?({asset:'assets',room:'rooms',redtag:'redtag'})[f.type]:'reports';
-  go(canAccess(page)?page:'reports');
-}
-const svKV=(l,v)=>`<div class="sv-kv"><span>${l}</span><b>${safe(v==null||v===''?'—':v)}</b></div>`;
-const svBadge=s=>`<span class="badge ${['Active','In Use','In Storage','Resolved'].includes(s)?'ok':'bad'}">${safe(s||'—')}</span>`;
-function svActions(extra){
-  return `<div class="sv-actions">${SCAN_STACK.length?'<button onclick="scanBack()">← Back</button>':''}${extra||''}<button onclick="scanOpenFull()">Open full system</button></div>`;
-}
-function svTagRows(tags){
-  return tags.length?`<table><thead><tr><th>Tag #</th><th>Date</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>${tags.map(t=>`<tr><td>${safe(t.id)}</td><td>${safe(t.date)}</td><td>${safe(t.reason)}</td><td>${svBadge(t.status)}</td><td><button onclick="scanGo('redtag','${safe(t.id)}')">View</button></td></tr>`).join('')}</tbody></table>`:'<p>No red tags.</p>';
-}
-function svAsset(a){
-  let room=db.rooms.find(r=>r.room===a.room)||{};
-  let tags=(db.redtags||[]).filter(t=>t.assetId===a.id);
-  let hist=(a.history||[]).slice().reverse().slice(0,8);
-  return svActions()+`<div class="sv-card"><div class="sv-title">${a.photo?`<img class="sv-photo" src="${safe(a.photo)}" alt="">`:''}<div><h2>${safe(a.name)}</h2><div class="sv-sub">Asset ${safe(a.id)} &nbsp; ${svBadge(a.status)}</div></div></div>
-   <div class="sv-grid">${svKV('Item type',a.type||'Equipment')}${svKV('Department',a.dept)}${svKV('Building',room.building)}${svKV('Floor',room.floor)}${svKV('Room',a.room)}${svKV('Responsible person',room.person)}${svKV('Condition',a.condition)}${svKV('Purchase date',a.purchase)}${svKV('Value','Rs. '+(+a.value||0).toLocaleString())}${svKV('Last maintenance',a.last)}${svKV('Next maintenance due',a.next)}</div></div>
-   <div class="sv-card"><h3>Red tags</h3>${svTagRows(tags)}</div>
-   <div class="sv-card"><h3>Movement history</h3>${hist.length?`<table><thead><tr><th>Date</th><th>Event</th><th>From</th><th>To</th><th>Reason</th></tr></thead><tbody>${hist.map(h=>`<tr><td>${safe(h.date)}</td><td>${safe(h.event)}</td><td>${safe(h.from)}</td><td>${safe(h.to)}</td><td>${safe(h.reason)}</td></tr>`).join('')}</tbody></table>`:'<p>No movements recorded.</p>'}</div>`;
-}
-function svRoom(r){
-  let assets=db.assets.filter(a=>a.room===r.room);
-  let tags=(db.redtags||[]).filter(t=>t.room===r.room&&t.status!=='Resolved');
-  let au=(db.audits||[]).filter(x=>x.room===r.room).slice(-1)[0];
-  let score=au?Math.round(au.vals.reduce((x,y)=>x+y,0)/20*100)+'% ('+au.date+')':'';
-  return svActions()+`<div class="sv-card"><div class="sv-title"><div><h2>${safe(r.room)}</h2><div class="sv-sub">${svBadge(r.status)}</div></div></div>
-   <div class="sv-grid">${svKV('Building',r.building)}${svKV('Floor',r.floor)}${svKV('Department',r.dept)}${svKV('Room / Area',r.room)}${svKV('Responsible person',r.person)}${svKV('Assets in room',assets.length)}${svKV('Open red tags',tags.length)}${svKV('Latest 5S audit',score)}</div></div>
-   <div class="sv-card"><h3>Assets in this room</h3>${assets.length?`<table><thead><tr><th>ID</th><th>Item</th><th>Type</th><th>Condition</th><th>Status</th><th></th></tr></thead><tbody>${assets.map(a=>`<tr><td>${safe(a.id)}</td><td>${safe(a.name)}</td><td>${safe(a.type||'Equipment')}</td><td>${safe(a.condition)}</td><td>${svBadge(a.status)}</td><td><button onclick="scanGo('asset','${safe(a.id)}')">View</button></td></tr>`).join('')}</tbody></table>`:'<p>No assets registered in this room.</p>'}</div>
-   <div class="sv-card"><h3>Open red tags</h3>${svTagRows(tags)}</div>`;
-}
-function svTag(t){
-  let a=db.assets.find(x=>x.id===t.assetId);
-  let room=db.rooms.find(r=>r.room===t.room)||{};
-  return svActions(`<button onclick="downloadRedTagPDF('${safe(t.id)}')">Download tag PDF</button>`)+`<div class="sv-card sv-red"><div class="sv-title"><div><h2>🔴 Red Tag ${safe(t.id)}</h2><div class="sv-sub">${safe(t.item)} &nbsp; ${svBadge(t.status)}</div></div></div>
-   <div class="sv-grid">${svKV('Date',t.date)}${svKV('Tagged by',t.taggedBy)}${svKV('Item',t.item)}${svKV('Department',t.dept)}${svKV('Building',room.building)}${svKV('Room / location',t.room)}${svKV('Reason',t.reason)}${svKV('Notes',t.note)}${svKV('Disposition',t.disposition)}${svKV('Disposition date',t.dispositionDate)}${svKV('Disposition notes',t.dispositionNote)}</div></div>
-   ${a?`<div class="sv-card"><h3>Linked asset</h3><div class="sv-grid">${svKV('Asset ID',a.id)}${svKV('Name',a.name)}${svKV('Type',a.type)}${svKV('Condition',a.condition)}${svKV('Status',a.status)}</div><div class="sv-actions"><button onclick="scanGo('asset','${safe(a.id)}')">View asset</button></div></div>`:''}`;
-}
-function showScanDetail(){
-  if(!sessionUser()){scanGate();return}
-  let f=scanFind();
-  if(!f){scanShell(svActions()+'<div class="sv-card"><h2>Record not found</h2><p>This code does not match any record in the system (it may have been deleted, or the latest data could not be loaded).</p></div>');return}
-  scanShell(f.type==='asset'?svAsset(f.rec):f.type==='room'?svRoom(f.rec):svTag(f.rec));
-  window.scrollTo(0,0);
-}
-
-securitySetup();
-cpRender();
-render();
-SCAN=parseScan();
-if(SCAN){window.SCAN_PENDING=true;scanShell('<div class="sv-card"><p>Loading record…</p></div>')}
-if(LIVE_DB_ENABLED){
-  syncFromServer().finally(()=>{if(SCAN)scanGate()});
-} else {
-  setTimeout(()=>setLiveDbStatus("Google database not configured", false),0);
-  if(SCAN)scanGate();
-}
+const protectedMutations=["roomForm","saveRoom","assetForm","saveAsset","move","doMove","missing","maintForm","saveMaint","auditForm","saveAudit","redTagForm","saveRedTag","resolveRedTagForm","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpBackup","cpRestoreBackup","cpResetConfig"];
+protectedMutations.forEach(name=>{let original=window[name];window[name]=function(...args){if(!requireAdmin())return;let result=original.apply(this,args);if(["saveRoom","saveAsset","doMove","missing","saveMaint","saveAudit","saveRedTag","resolveRedTag","cpSaveSettings","cpAdd","cpRemove","cpResetConfig"].includes(name))logActivity("System update",name);return result}});
+const originalRender=render;render=function(){originalRender();renderSecurity()};
+securitySetup();render();
 </script></body></html>
